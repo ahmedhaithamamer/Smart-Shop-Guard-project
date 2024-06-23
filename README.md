@@ -1,2 +1,2 @@
-# Secure-smart-shop-
-Secure smart shop is simply a smart shop project that I worked on at my Uni 
+# Secure Smart Shop
+Secure Smart Shop is simply a prototype for a smart shop. It's a project I have worked on at my University as a part of my curriculum.
