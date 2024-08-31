@@ -1,6 +1,6 @@
 # Smart Shop Guard project
 - A prototype of a smart automated shop that provides service, safety, and security, implemented using both Arduino Uno and ESP8266 microcontrollers
-- ![Poster 1 PHY112](https://github.com/user-attachments/assets/ebddb888-a94a-4e55-96ee-082f7e417de2)
+ ![Poster 1 PHY112](https://github.com/user-attachments/assets/ebddb888-a94a-4e55-96ee-082f7e417de2)
 
 - Security system with RFID technology, and motion sensors.
 
