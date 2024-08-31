@@ -17,7 +17,7 @@ The firefighting system is designed to detect and respond to fire hazards immedi
 ## Automated air conditioning system
 The air conditioning system monitors temperature and humidity using a DHT11 sensor. When either of these parameters exceeds a predefined threshold, a fan is activated. The fan, which requires 12V for operation, is controlled via a transistor. Since the Arduino only outputs 5V, the transistor acts as a switch to step up the voltage to 12V. Additionally, the temperature and humidity readings are displayed on an LCD screen.
 > 12V Fan, DHT11 temperature & humidity sensor, LCD included with an I2C
-![Screenshot 2024-08-31 151107](https://github.com/user-attachments/assets/a0c8a47a-d772-433e-973a-89955d4440b0)
+![Screenshot 2024-08-31 151107](https://github.com/user-attachments/assets/a0c8a47a-d772-433e-973a-89955d4440b0)  ![Screenshot 2024-08-31 150033](https://github.com/user-attachments/assets/8c1ad3f7-ac2c-4030-a00f-9a05861aa29b)
 
 
 # Video for the whole running system
