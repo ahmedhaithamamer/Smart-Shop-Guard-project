@@ -11,6 +11,6 @@ In the Main Project Folder, the full system has been implemented in **Python**. 
 
 # Video for the whole running system
 
+https://drive.google.com/file/d/1etwb1SVXW_5A4gW-wf63lvFS1rl1BFbs/view?usp=sharing
 
 
-https://github.com/xSkkarf/IoT-Smart-home-admin-and-security-system/assets/113522732/03feafff-fa0a-4c8f-8075-7c5e3dc84c7d
