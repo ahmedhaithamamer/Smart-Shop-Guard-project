@@ -1,5 +1,5 @@
-# Secure-Smart-Shop project
-- Smart home monitoring system implemented on **Raspberry Pi 3 B+** and controlled by Blynk web service through a mobile application with a keep-alive system using a socket connection.
+# Smart Shop Guard project
+- prototype of a smart automated shop that provide service ,safety and security![image](https://github.com/user-attachments/assets/26049882-d437-4d1e-b57c-f3ec01c69638)
 - Security system with RFID technology, and motion sensors.
 
 # Request testing Folder
