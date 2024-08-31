@@ -2,7 +2,7 @@
 - A prototype of a smart automated shop that provides service, safety, and security, implemented using both Arduino Uno and ESP8266 microcontrollers
 - The project consists of four main systems: an automatic cooling system, a firefighting system, an automatic entry detection system, and a security system for intruder detection.
 
-# Automatic entry detection system
+## Automatic entry detection system
 ![image](https://github.com/user-attachments/assets/f86acbed-ca17-4638-957b-704dc8fc865c)
 
 
