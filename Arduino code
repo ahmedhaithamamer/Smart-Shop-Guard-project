@@ -1,0 +1,189 @@
+//Libraries
+#include <DHT.h>
+
+//I2C LCD:
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+
+LiquidCrystal_I2C lcd(0x27,16,2);
+  
+//Constants
+#define DHTPIN 8     // what pin we're connected to
+#define DHTTYPE DHT11   // DHT 11
+DHT dht(DHTPIN, DHTTYPE); // Initialize DHT sensor
+
+//Variables
+int h;  //Stores humidity value
+int t; //Stores temperature value
+
+int fan = 7;
+int flamesensor = 10;
+int buzzer = 9;
+int relay = 6;
+
+const int trigPin = 11;  // Trig pin of the ultrasonic(buzzer) sensor
+const int echoPin = 12; // Echo pin of the ultrasonic(buzzer)sensor
+
+// Define variables
+long duration;
+int distance;
+
+
+void fanTempLCD()
+{
+   h = dht.readHumidity();
+    t = dht.readTemperature();
+    
+    if(t > 23 || h > 80)   //if condition for the cases(on,off) of the fan
+    digitalWrite(fan,HIGH);      
+  else
+    digitalWrite(fan,LOW);
+    
+    //Print temp and humidity values to serial monitor
+    Serial.print("Humidity: ");
+    Serial.print(h);
+    Serial.print(" %, Temp: ");
+    Serial.print(t);
+    Serial.println(" ° Celsius");
+        
+// set the cursor to (0,0):
+// print from 0 to 9:
+
+    lcd.setCursor(0, 0);
+    lcd.println("Gahabeez Market ");
+    
+    lcd.setCursor(0, 1);
+    lcd.print("T:");
+    lcd.print(t);
+    lcd.print("C");
+
+    int value1 = digitalRead (flamesensor);
+  if (value1 == 0)
+  {
+    lcd.setCursor(6, 1);
+    lcd.println("Fire!");
+   
+  }
+  else 
+  {
+    lcd.setCursor(6, 1);
+    lcd.println("SAFE ");
+    
+  }
+  if (distance <= 10 && millis() >= 90000)
+  {
+    lcd.setCursor(6, 1);
+    lcd.println("Thief");
+   
+  }
+  else 
+  {
+    lcd.setCursor(6, 1);
+    lcd.println("SAFE ");
+    
+  }
+    //lcd.setCursor(6, 1);
+    //lcd.println("2024 ");
+     
+    lcd.setCursor(11, 1);
+    lcd.print("H:");
+    lcd.print(h);
+    lcd.print("%");
+    
+ // delay(1000); //Delay 1 sec.
+}
+
+void readflamesensor()
+{
+  int value1 = digitalRead (flamesensor);
+  if (value1 == 0)
+  {
+    digitalWrite(buzzer, HIGH);
+    digitalWrite(relay, HIGH);
+    //lcd.setCursor(6, 1);
+    //lcd.println("Fire ");
+    delay(100);
+  }
+  else 
+  {
+    digitalWrite(buzzer, LOW);
+    digitalWrite(relay, LOW);
+    //lcd.setCursor(6, 1);
+   // lcd.println("SAFE ");
+    delay(100);
+  }
+  
+}
+
+void readmotion()
+{
+
+  // Clear the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Read the echo pulse
+  duration = pulseIn(echoPin, HIGH);
+
+  // Calculate the distance in cm
+  distance = duration * 0.034 / 2;
+
+  // Print the distance to serial monitor
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  delay(50);
+
+  // Print the distance to the serial monitor
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // Check if the distance is 10 cm
+  if (distance <= 10 && millis() >= 90000 ) 
+  {
+    // Turn on the buzzer
+    digitalWrite(buzzer, HIGH);
+    delay(600);
+  } else {
+    // Turn off the buzzer
+    digitalWrite(buzzer, LOW);
+  }
+
+
+}
+
+
+
+void setup()
+{
+    //defining outputs and inputs
+    Serial.begin(9600);
+    
+    pinMode(fan, OUTPUT);
+    pinMode(buzzer, OUTPUT);
+    pinMode(flamesensor, INPUT);
+    pinMode (relay, OUTPUT);
+    
+    // Set pin modes
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+    
+    dht.begin();
+    lcd.init(); //initialize the lcd
+    lcd.backlight(); //open the backlight
+
+    
+}
+
+void loop()
+{
+    readflamesensor();
+    fanTempLCD();
+    readmotion();
+}    
+
