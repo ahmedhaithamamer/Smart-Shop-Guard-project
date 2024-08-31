@@ -3,7 +3,8 @@
 - The project consists of four main systems: an **automatic cooling system**, a **firefighting system**, an **automatic entry detection system**, and a **security system** for intruder detection.
 
 ## Automatic entry detection system
-> This system is designed to detect customers approaching the shop using an **ultrasonic sensor** and automatically opens the door with a **servo motor**. The door remains open until the customer enters and then closes behind them, ensuring a seamless and secure entry process.
+This system is designed to detect customers approaching the shop using an **ultrasonic sensor** and automatically opens the door with a **servo motor**. The door remains open until the customer enters and then closes behind them, ensuring a seamless and secure entry process.
+> Servo motor, Ultrasonic sensor
 
 ![image](https://github.com/user-attachments/assets/f86acbed-ca17-4638-957b-704dc8fc865c)
 
