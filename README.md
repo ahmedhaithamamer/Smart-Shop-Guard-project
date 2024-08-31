@@ -9,7 +9,7 @@ This system is designed to detect customers approaching the shop using an **ultr
 
 
 ## Firefighting system
-The firefighting system is designed to detect and respond to fire hazards immediately. It uses a **flame sensor** to detect the presence of fire. Once a fire is detected, a **buzzer** is activated to alert customers, and an **AC water pump** is turned on to extinguish the fire. The pump is connected to a **relay**, which amplifies the voltage from 5 to 12 volts, ensuring that the pump operates effectively.
+The firefighting system is designed to detect and respond to fire hazards immediately. It uses a **flame sensor** to detect the presence of fire. Once a fire is detected, a **buzzer** is activated to alert customers, as well as an LCD that was utilized for the same purpose and an **AC water pump** is turned on to extinguish the fire. The pump is connected to a **relay**, which amplifies the voltage from 5 to 12 volts, ensuring that the pump operates effectively.
 > Flame sensor, Relay, Buzzer, AC water pump
 ![Screenshot 2024-08-31 150033](https://github.com/user-attachments/assets/8c1ad3f7-ac2c-4030-a00f-9a05861aa29b)
 
