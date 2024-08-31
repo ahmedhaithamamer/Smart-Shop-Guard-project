@@ -20,6 +20,7 @@ The air conditioning system monitors temperature and humidity using a DHT11 sens
 > 12V Fan, DHT11 temperature & humidity sensor, LCD included with an I2C
 ![Screenshot 2024-08-31 151107](https://github.com/user-attachments/assets/a0c8a47a-d772-433e-973a-89955d4440b0)
 
+# After the integration
 ![Picture1](https://github.com/user-attachments/assets/9f83cc28-a480-4b8b-b2f9-9614dc355d6c)
 
 # Videos for the whole running system
