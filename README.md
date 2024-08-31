@@ -1,4 +1,5 @@
 # Smart Shop Guard project
+![File_000-min](https://github.com/user-attachments/assets/817044e5-c3e2-4efb-a62e-8bb6452c51aa)
 
 - A prototype of a smart automated shop that provides service, safety, and security, implemented using both **Arduino Uno** and **ESP8266** microcontrollers
 - The project consists of four main systems: an **automatic cooling system**, a **firefighting system**, an **automated air conditioning system**, and a **security system** for intruder detection.
