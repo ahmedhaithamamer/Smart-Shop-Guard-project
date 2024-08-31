@@ -1,5 +1,6 @@
 # Smart Shop Guard project
-- prototype of a smart automated shop that provide service ,safety and security![Uploading Poster 1 PHY112.jpg…]()
+- prototype of a smart automated shop that provide service ,safety and security
+- ![Poster 1 PHY112](https://github.com/user-attachments/assets/ebddb888-a94a-4e55-96ee-082f7e417de2)
 
 - Security system with RFID technology, and motion sensors.
 
