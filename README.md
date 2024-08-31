@@ -20,8 +20,13 @@ The air conditioning system monitors temperature and humidity using a DHT11 sens
 ![Screenshot 2024-08-31 151107](https://github.com/user-attachments/assets/a0c8a47a-d772-433e-973a-89955d4440b0)
 
 
-# Video for the whole running system
+# Videos for the whole running system
+>  Automatic entry detection system
+https://github.com/user-attachments/assets/28712764-492d-467e-9aa7-fb2b8b069abf
+> Firefighting system
+https://github.com/user-attachments/assets/1052b2f2-3211-4acc-8836-fc73112fbd1a
 
-https://drive.google.com/file/d/1etwb1SVXW_5A4gW-wf63lvFS1rl1BFbs/view?usp=sharing
+
+
 
 
