@@ -20,8 +20,9 @@ https://github.com/user-attachments/assets/287373d4-7b62-408c-9f69-f0bb54effb32
 
 ## Automated air conditioning system
 The firefighting system is designed to detect and respond to fire hazards immediately. It uses a **flame sensor** to detect the presence of fire. Once a fire is detected, a **buzzer** is activated to alert customers, and an **AC water pump** is turned on to extinguish the fire. The pump is connected to a **relay**, which amplifies the voltage from 5 to 12 volts, ensuring that the pump operates effectively.
-> Flame sensor, Relay, Buzzer, AC water pump
+> 12V Fan, DHT11 temprature & humidity sensor, LCD included with an I2C
 
+![Screenshot 2024-08-31 151107](https://github.com/user-attachments/assets/a0c8a47a-d772-433e-973a-89955d4440b0)
 
 
 # Video for the whole running system
