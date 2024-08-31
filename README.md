@@ -14,7 +14,9 @@ The firefighting system is designed to detect and respond to fire hazards immedi
 > Flame sensor, Relay, Buzzer, AC water pump
 
 ![Screenshot 2024-08-31 150033](https://github.com/user-attachments/assets/8c1ad3f7-ac2c-4030-a00f-9a05861aa29b)
-https://github.com/user-attachments/assets/20099eb9-e7ca-4bba-b79c-9c4fb72692bb
+
+https://github.com/user-attachments/assets/287373d4-7b62-408c-9f69-f0bb54effb32
+
 
 
 
