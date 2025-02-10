@@ -59,3 +59,6 @@ This system monitors temperature and humidity using a **DHT11 sensor**. When eit
 
 - **Automated Air Conditioning System:**
   [Watch Video](https://github.com/user-attachments/assets/e4350ce7-36f6-45f2-aca9-62d095d811f2)
+
+Copyright © 2025 Ahmed Haitham Amer
+Licensed under the MIT
