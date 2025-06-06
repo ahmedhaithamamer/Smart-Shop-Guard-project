@@ -4,7 +4,7 @@
 
 An automated smart shop prototype focused on **service, safety, and security**, built with:
 
-![Arduino](https://img.shields.io/badge/Arduino-00979D?style=flat&logo=arduino&logoColor=white)  ![ESP8266](https://img.shields.io/badge/ESP8266-FF6C37?style=flat&logo=espressif&logoColor=white)  ![C++](https://img.shields.io/badge/C++-00599C?style=flat&logo=c%2B%2B&logoColor=white)  ![Visual Studio](https://img.shields.io/badge/Visual_Studio-5C2D91?style=flat&logo=visual-studio&logoColor=white)  ![PlatformIO](https://img.shields.io/badge/PlatformIO-0081CB?style=flat&logo=platformio&logoColor=white)  
+![Arduino](https://img.shields.io/badge/Arduino-00979D?style=flat&logo=arduino&logoColor=white)  ![ESP8266](https://img.shields.io/badge/ESP8266-FF6C37?style=flat&logo=espressif&logoColor=white)  ![C++](https://img.shields.io/badge/C++-00599C?style=flat&logo=c%2B%2B&logoColor=white)  ![Visual Studio](https://img.shields.io/badge/Visual_Studio-5C2D91?style=flat&logo=visual-studio&logoColor=white)   
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)  ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)  ![Last Commit](https://img.shields.io/github/last-commit/ahmedhaithamamer/Smart-Shop-Guard-project)  
 
 ---
