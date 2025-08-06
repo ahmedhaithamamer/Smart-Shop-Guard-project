@@ -24,28 +24,28 @@ void playModeSwitchTone() {
     for (int i = 0; i < sizeof(switchNotes) / sizeof(switchNotes[0]); i++) {
         tone(BUZZER_PIN, switchNotes[i], duration);
         delay(duration + 20);
-        yield(); // Allow other tasks to run
+        yield(); 
     }
     noTone(BUZZER_PIN);
 }
 
 void playAlertTone() {
-    int duration = 150; // Reduced from 300ms to 150ms
+    int duration = 150; 
     int tone1 = 880;
     int tone2 = 440;
 
-    for (int i = 0; i < 3; i++) { // Reduced from 5 to 3 iterations
+    for (int i = 0; i < 3; i++) { 
         tone(BUZZER_PIN, tone1, duration);
         delay(duration);
-        yield(); // Allow other tasks to run
+        yield(); 
         tone(BUZZER_PIN, tone2, duration);
         delay(duration);
-        yield(); // Allow other tasks to run
+        yield(); 
     }
 
-    tone(BUZZER_PIN, tone1, 250); // Reduced from 500ms to 250ms
+    tone(BUZZER_PIN, tone1, 250); 
     delay(250);
-    yield(); // Allow other tasks to run
+    yield(); 
     noTone(BUZZER_PIN);
 }
 
