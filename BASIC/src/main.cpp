@@ -1,47 +1,52 @@
-// Smart Shop Guard - Modular Version
-// Main application file
-
 #include "config.h"
-#include "system.h"
-#include "sensors.h"
-#include "actuators.h"
-#include "display.h"
-#include "audio.h"
+#include <DHT.h>
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+#include <ESP32Servo.h>         
+#include <WiFi.h>
 #include <BlynkSimpleEsp32.h>
 
-
-
-// Global hardware objects
+// LCD setup
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
-DHT dht(DHTPIN, DHTTYPE);
-Servo myServo;
 
 // WiFi credentials
 char ssid[] = WIFI_SSID;
 char pass[] = WIFI_PASSWORD;
 
-// Global variables
-int h = 0;              // Humidity
-int t = 0;              // Temperature
-long duration = 0;
-int distance = 0;
+// DHT Sensor setup
+DHT dht(DHTPIN, DHTTYPE);
+
+// Pin definitions are now in config.h            
+
+Servo myServo;
+
+// Variables
+int h;  // Humidity
+int t;  // Temperature
+long duration;
+int distance;
 int degree = 0;
 int Servodegree = 0;
 unsigned long lastTime = 0;
-unsigned long startTime = 0;
+unsigned long startTime;
 bool isDay = false;
 bool AC = false;
 unsigned long lastStatusPrint = 0;
 
-// Function declarations for main logic
-void processNightMode();
-void processDayMode();
+// Function declarations
 void fanTempLCD();
+void readFlameSensor();
+void readMotion();
+void triggerUltrasonicSensor();
+void moveServo();
+void StartupTone();
+void ModeSwitchTone();
+void alertTone();
+void displayModeStatus();
 
-// Blynk virtual pin handlers
 BLYNK_WRITE(VPIN_DAY_NIGHT) {
   isDay = param.asInt();
-  playModeSwitchTone();
+  ModeSwitchTone();
   displayModeStatus();
 }
 
@@ -50,106 +55,200 @@ BLYNK_WRITE(VPIN_AC_CONTROL) {
 }
 
 void setup() {
-  // Initialize system components
-  initSystem();
-  
-  // Initialize hardware modules
-  initDisplay();
-  initSensors();
-  initActuators();
-  initAudio();
-  
-  // Initialize WiFi and Blynk
-  if (initWiFi()) {
+  Serial.begin(SERIAL_BAUD_RATE);
+  WiFi.begin(ssid, pass);
+
+  unsigned long wifiConnectStart = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - wifiConnectStart < WIFI_TIMEOUT) {
+    delay(200);
+    Serial.print(".");
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("WiFi connected");
     Blynk.config(BLYNK_AUTH_TOKEN);
     Blynk.connect();
+  } else {
+    Serial.println("WiFi not connected");
   }
-  
-  // Play startup sequence
-  playStartupTone();
-  displayWelcomeMessage();
+
+  pinMode(FAN_PIN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(FLAME_SENSOR_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+  pinMode(PIR_PIN, INPUT);
+
+  myServo.attach(SERVO_PIN);
+
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  dht.begin();
+  lcd.init();
+  lcd.backlight();
+  StartupTone();
+
+  for (int i = 0; i < 3; i++) {
+    lcd.setCursor(4, 0);
+    lcd.print("Welcome!");
+    delay(STARTUP_DISPLAY_DELAY);
+    lcd.clear();
+    delay(200);
+  }
+
   displayModeStatus();
-}
-
-void loop() {
-  Blynk.run();
-  
-  if (!isDay) {
-    processNightMode();
-  } else {
-    processDayMode();
-  }
-}
-
-void processNightMode() {
-  // Read sensors and update display
-  fanTempLCD();
-  
-  // Check flame sensor
-  bool flameDetected = isFlameDetected();
-  if (flameDetected) {
-    playAlertTone();
-    activateRelay();
-    displayFireAlert();
-  } else {
-    deactivateRelay();
-    displaySafeStatus();
-  }
-  
-  // Send flame status to Blynk
-  if (Blynk.connected()) {
-    Blynk.virtualWrite(VPIN_FLAME, flameDetected);
-  }
-  
-  // Handle ultrasonic and servo for automatic door
-  triggerUltrasonicSensor();
-  moveServo();
-}
-
-void processDayMode() {
-  // Read sensors and update display
-  fanTempLCD();
-  
-  // Check flame sensor
-  bool flameDetected = isFlameDetected();
-  if (flameDetected) {
-    playAlertTone();
-    activateRelay();
-    displayFireAlert();
-  } else {
-    deactivateRelay();
-    displaySafeStatus();
-  }
-  
-  // Check motion sensor for theft detection
-  bool motionDetected = isMotionDetected();
-  if (motionDetected) {
-    displayThiefAlert();
-    playAlertTone();
-  }
-  
-  // Send sensor data to Blynk
-  if (Blynk.connected()) {
-    Blynk.virtualWrite(VPIN_FLAME, flameDetected);
-    Blynk.virtualWrite(VPIN_MOTION, motionDetected);
-  }
-  
-  delay(200);
+  startTime = millis();
 }
 
 void fanTempLCD() {
-  // Read temperature and humidity using sensors module
-  readTemperatureHumidity();
-  
-  // Control fan based on readings
-  controlFan(t, h);
-  
-  // Display readings on LCD
-  displayTemperatureHumidity(t, h);
-  
-  // Send to Blynk if connected
+  h = dht.readHumidity();
+  t = dht.readTemperature();
+
+  if (t > TEMP_THRESHOLD || h > HUMIDITY_THRESHOLD || AC)
+    digitalWrite(FAN_PIN, HIGH);
+  else
+    digitalWrite(FAN_PIN, LOW);
+
+  lcd.setCursor(0, 1);
+  lcd.print("T:");
+  lcd.print(t);
+  lcd.print("C ");
+
+  lcd.setCursor(11, 1);
+  lcd.print("H:");
+  lcd.print(h);
+  lcd.print("%");
+
   if (Blynk.connected()) {
     Blynk.virtualWrite(VPIN_TEMPERATURE, t);
     Blynk.virtualWrite(VPIN_HUMIDITY, h);
   }
+}
+
+void readFlameSensor() {
+  int value1 = digitalRead(FLAME_SENSOR_PIN);
+  if (value1 == 0) {
+    alertTone();
+    digitalWrite(RELAY_PIN, HIGH);
+    lcd.setCursor(6, 1);
+    lcd.print("Fire!");
+  } else {
+    digitalWrite(BUZZER_PIN, LOW);
+    digitalWrite(RELAY_PIN, LOW);
+    lcd.setCursor(6, 1);
+    lcd.print("SAFE ");
+  }
+
+  if (Blynk.connected()) {
+    Blynk.virtualWrite(VPIN_FLAME, !value1);
+  }
+
+  delay(100);
+}
+
+void readMotion() {
+  int pirState = digitalRead(PIR_PIN);
+  if (pirState == HIGH) {
+    lcd.setCursor(5, 1);
+    lcd.print("Thief!");
+    alertTone();
+  }
+
+  if (Blynk.connected()) {
+    Blynk.virtualWrite(VPIN_MOTION, pirState);
+  }
+
+  delay(200);
+}
+
+void loop() {
+  Blynk.run();
+  if (!isDay) {
+    fanTempLCD();
+    readFlameSensor();
+    triggerUltrasonicSensor();
+    moveServo();
+  } else {
+    fanTempLCD();
+    readFlameSensor();
+    readMotion();
+  }
+}
+
+void moveServo() {
+  if (distance <= DISTANCE_THRESHOLD) {
+    degree = 180;
+    lastTime = millis();
+  }
+
+  if (millis() - lastTime >= SERVO_DELAY) {
+    degree = 0;
+  }
+
+  myServo.write(degree);
+  delay(15);
+}
+
+void triggerUltrasonicSensor() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  duration = pulseIn(ECHO_PIN, HIGH);
+  distance = duration * 0.034 / 2;
+
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+}
+
+void StartupTone() {
+  int startupNotes[] = {523, 659, 784, 1047, 1319, 1568 };
+  int duration = 150;
+  for (int i = 0; i < sizeof(startupNotes) / sizeof(startupNotes[0]); i++) {
+    tone(BUZZER_PIN, startupNotes[i], duration);
+    delay(duration + 20);
+  }
+  noTone(BUZZER_PIN);
+}
+
+void ModeSwitchTone() {
+  int switchNotes[] = {784, 988, 1175};
+  int duration = 120;
+  for (int i = 0; i < sizeof(switchNotes) / sizeof(switchNotes[0]); i++) {
+    tone(BUZZER_PIN, switchNotes[i], duration);
+    delay(duration + 20);
+  }
+  noTone(BUZZER_PIN);
+}
+
+void alertTone() {
+  int duration = 300;
+  int tone1 = 880;
+  int tone2 = 440;
+
+  for (int i = 0; i < 5; i++) {
+    tone(BUZZER_PIN, tone1, duration);
+    delay(duration);
+    tone(BUZZER_PIN, tone2, duration);
+    delay(duration);
+  }
+
+  tone(BUZZER_PIN, tone1, 500);
+  delay(500);
+  noTone(BUZZER_PIN);
+}
+
+void displayModeStatus() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Mode: ");
+  lcd.print(isDay ? "Night" : "Day");
+  delay(MODE_DISPLAY_DELAY);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Gahabeez Market");
+  delay(MODE_DISPLAY_DELAY);
 }

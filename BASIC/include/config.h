@@ -1,15 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// Library includes - centralized for all modules
-#include <Arduino.h>
-#include <DHT.h>
-#include <LiquidCrystal_I2C.h>
-#include <Wire.h>
-#include <ESP32Servo.h>         
-#include <WiFi.h>
-// Note: BlynkSimpleEsp32.h is only included in main.cpp to avoid multiple definition errors
-
 // Blynk Configuration
 #define BLYNK_TEMPLATE_ID "TMPL2jt8pOqfP"
 #define BLYNK_TEMPLATE_NAME "Smart Secure Smart Shop"
