@@ -1,11 +1,12 @@
-// Smart Shop Guard - Modular Version
-// Main application file
+// Smart Shop Guard - Dual Display Version
+// Main application file with both LCD and OLED support
 
 #include "config.h"
 #include "system.h"
 #include "sensors.h"
 #include "actuators.h"
-#include "display.h"
+#include "display.h"        // LCD display functions
+#include "oled_display.h"   // OLED display functions
 #include "audio.h"
 #include "blynk_handlers.h"
 
@@ -16,8 +17,6 @@
 #include <WiFi.h>
 #include "blynk_instance.h"
 #include "esp_task_wdt.h"
-
-
 
 // Global hardware objects
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
@@ -40,6 +39,10 @@ unsigned long startTime = 0;
 bool isDay = false;
 bool AC = false;
 unsigned long lastStatusPrint = 0;
+unsigned long lastOLEDUpdate = 0;
+
+// OLED update interval (reduce CPU usage)
+const unsigned long oledUpdateInterval = 500; // Update every 500ms
 
 // Function declarations for main logic
 void processNightMode();
@@ -51,7 +54,8 @@ void setup() {
   initSystem();
   
   // Initialize hardware modules
-  initDisplay();
+  initDisplay();      // Initialize LCD
+  initOLEDDisplay();  // Initialize OLED
   initSensors();
   initActuators();
   initAudio();
@@ -64,8 +68,12 @@ void setup() {
   
   // Play startup sequence
   playStartupTone();
-  displayWelcomeMessage();
-  displayModeStatus();
+  
+  // Show welcome on both displays
+  displayWelcomeMessage();  // LCD welcome (blinking)
+  // OLED welcome is handled in initOLEDDisplay() with intro animation
+  
+  displayModeStatus();  // Show on LCD
 }
 
 void loop() {
@@ -73,6 +81,15 @@ void loop() {
   esp_task_wdt_reset();
   
   Blynk.run();
+  
+  // Handle OLED button navigation and updates
+  handleOLEDButtons();
+  
+  // Update OLED display at regular intervals
+  if (millis() - lastOLEDUpdate > oledUpdateInterval) {
+    updateOLEDDisplay();
+    lastOLEDUpdate = millis();
+  }
   
   if (!isDay) {
     processNightMode();
@@ -94,10 +111,12 @@ void processNightMode() {
   if (isFlameDetected()) {
     playAlertTone();
     activateRelay();
-    displayFireAlert();
+    displayFireAlert();  // LCD alert
+    // OLED alert is handled via fireDetected flag in OLED display
   } else {
     deactivateRelay();
-    displaySafeStatus();
+    displaySafeStatus();  // LCD status
+    // OLED status is handled via fireDetected flag in OLED display
   }
   
   // Handle ultrasonic and servo for automatic door
@@ -114,16 +133,19 @@ void processDayMode() {
   if (isFlameDetected()) {
     playAlertTone();
     activateRelay();
-    displayFireAlert();
+    displayFireAlert();  // LCD alert
+    // OLED alert is handled via fireDetected flag in OLED display
   } else {
     deactivateRelay();
-    displaySafeStatus();
+    displaySafeStatus();  // LCD status
+    // OLED status is handled via fireDetected flag in OLED display
   }
   
   // Check motion sensor for theft detection
   readMotion();
   if (isMotionDetected()) {
-    displayThiefAlert();
+    displayThiefAlert();  // LCD alert
+    // OLED alert is handled via motionDetected flag in OLED display
     playAlertTone();
   }
 }
@@ -135,6 +157,9 @@ void fanTempLCD() {
   // Control fan based on readings
   controlFan(t, h);
   
-  // Display readings on LCD
+  // Display readings on LCD (original functionality preserved)
   displayTemperatureHumidity(t, h);
+  
+  // OLED displays temperature/humidity in its sensor page automatically
+  // via the global t and h variables
 }

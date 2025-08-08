@@ -24,10 +24,18 @@
 
 // DHT Sensor Configuration
 #define DHTTYPE DHT11       // DHT sensor type
-
 // LCD Configuration
 #define LCD_ADDRESS 0x27    // I2C address for LCD
 #define LCD_COLUMNS 16      // LCD columns
+
+// OLED Display Configuration (1.3" 128x64)
+#define OLED_SDA_PIN 8     // SDA pin for OLED (ESP32)
+#define OLED_SCL_PIN 9     // SCL pin for OLED (ESP32)
+#define OLED_ADDRESS 0x3C   // I2C address for OLED
+
+// Legacy LCD Configuration (commented out - replaced by OLED)
+// #define LCD_ADDRESS 0x27    // I2C address for LCD
+// #define LCD_COLUMNS 16      // LCD columns
 #define LCD_ROWS 2          // LCD rows
 
 // Temperature and Humidity Thresholds

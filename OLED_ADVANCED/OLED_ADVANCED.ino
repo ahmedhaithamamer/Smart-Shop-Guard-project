@@ -72,83 +72,76 @@ struct SensorData {
   int freeHeap = 0;
 } sensors;
 
-void showIntro() {
-  // Animated Smart Shop Guard intro
-  
-  // Animation 1: Text appears letter by letter
+void showIntroAnimation() {
+  // Animation 1: Smart Shop Guard text appears letter by letter
   display.clear();
   display.setFont(ArialMT_Plain_16);
   
-  // Show "Smart Shop" letter by letter
-  String line1 = "Smart Shop";
-  for (int i = 0; i <= line1.length(); i++) {
-    display.clear();
-    display.drawString(15, 15, line1.substring(0, i));
-    display.display();
-    delay(150);
-  }
+  // First show "SMART"
+  display.drawString(30, 15, "SMART");
+  display.display();
+  delay(800);
   
-  delay(300);
+  // Then add "SHOP"
+  display.drawString(35, 35, "SHOP");
+  display.display();
+  delay(800);
   
-  // Show "Guard" letter by letter with shield icon
-  String line2 = "Guard";
-  for (int i = 0; i <= line2.length(); i++) {
-    display.clear();
-    display.drawString(15, 15, line1); // Keep first line
-    display.drawString(35, 30, line2.substring(0, i));
+  // Clear and show "GUARD" with icon
+  display.clear();
+  display.drawXbm(20, 10, 16, 16, shield_icon);
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(40, 15, "GUARD");
+  display.display();
+  delay(1000);
+  
+  // Animation 2: Loading dots
+  display.clear();
+  display.setFont(ArialMT_Plain_10);
+  display.drawString(25, 20, "Smart Shop Guard");
+  
+  for (int i = 0; i < 8; i++) {
+    display.fillRect(0, 45, 128, 10); // Clear loading area
+    display.setColor(BLACK);
+    display.fillRect(0, 45, 128, 10);
+    display.setColor(WHITE);
     
-    // Add shield icon next to Guard when text is complete
-    if (i == line2.length()) {
-      display.drawXbm(80, 32, 16, 16, shield_icon);
+    // Draw loading bar
+    int barWidth = (i * 128) / 8;
+    display.drawRect(10, 45, 108, 8);
+    display.fillRect(12, 47, barWidth - 4, 4);
+    
+    // Loading text
+    display.drawString(45, 35, "Loading");
+    String dots = "";
+    for (int j = 0; j < (i % 4); j++) {
+      dots += ".";
     }
+    display.drawString(80, 35, dots + "   "); // Extra spaces to clear previous dots
     
     display.display();
-    delay(150);
+    delay(300);
   }
   
-  delay(500);
+  // Animation 3: System Ready
+  display.clear();
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(25, 15, "SYSTEM");
+  display.drawString(30, 35, "READY!");
+  display.display();
+  delay(1200);
   
-  // Animation 2: Blinking effect with shield icon
+  // Animation 4: Final fade effect
   for (int i = 0; i < 3; i++) {
     display.clear();
     display.display();
     delay(200);
     
-    display.clear();
-    display.drawString(15, 15, "Smart Shop");
-    display.drawString(35, 30, "Guard");
-    display.drawXbm(80, 32, 16, 16, shield_icon); // Shield next to Guard
+    display.setFont(ArialMT_Plain_10);
+    display.drawString(30, 25, "Initializing...");
     display.display();
-    delay(300);
+    delay(200);
   }
-  
-  // Animation 3: Border animation with shield icon
-  for (int i = 0; i < 64; i += 8) {
-    display.clear();
-    display.drawString(15, 15, "Smart Shop");
-    display.drawString(35, 30, "Guard");
-    display.drawXbm(80, 32, 16, 16, shield_icon); // Shield next to Guard
-    
-    // Draw animated border (adjusted for centered content)
-    display.drawRect(5, 5, 118, 50);
-    display.drawRect(4, 4, 120, 52);
-    
-    // Moving corner dots
-    int x = (i * 2) % 128;
-    display.fillCircle(x, 5, 1);
-    display.fillCircle(128 - x, 58, 1);
-    
-    display.display();
-    delay(100);
-  }
-  
-  // Final display with shield icon
-  display.clear();
-  display.drawString(15, 15, "Smart Shop");
-  display.drawString(35, 30, "Guard");
-  display.drawXbm(80, 32, 16, 16, shield_icon); // Shield next to Guard (centered)
-  display.display();
-  delay(800);
 }
 
 void setup() {
@@ -167,8 +160,8 @@ void setup() {
   display.flipScreenVertically();
   display.setFont(ArialMT_Plain_10); // Start with small font like OLED_1
   
-  // Show simple intro
-  showIntro();
+  // Show intro animation
+  showIntroAnimation();
   
   // Connect WiFi - SAME STYLE AS OLED_1
   WiFi.begin(ssid, password);
@@ -368,31 +361,69 @@ void drawPageDisplay() {
 }
 
 void showStatusPage() {
-  // Draw shield icon for status
-  display.drawXbm(0, 13, 16, 16, shield_icon);
+  // Animated status icon
+  if (sensors.fireDetected) {
+    if (alertFlashing) {
+      display.drawXbm(0, 13, 16, 16, fire_alt1); // Alternate fire icon
+    } else {
+      display.drawXbm(0, 13, 16, 16, fire_icon);
+    }
+  } else if (sensors.motionDetected) {
+    if (alertFlashing) {
+      display.drawXbm(0, 13, 16, 16, warning_icon); // Warning icon when flashing
+    } else {
+      display.drawXbm(0, 13, 16, 16, alert_icon);
+    }
+  } else {
+    display.drawXbm(0, 13, 16, 16, shield_icon);
+  }
   
   display.setFont(ArialMT_Plain_10);
   display.drawString(18, 13, "Status");
   
-  // Status info - COMPACT LIKE OLED_1
-  if (sensors.fireDetected && alertFlashing) {
-    display.drawString(0, 26, "FIRE DETECTED!");
-    display.drawString(0, 36, "EMERGENCY!");
-    display.drawString(0, 46, "EVACUATE NOW!");
-  } else if (sensors.motionDetected && alertFlashing) {
-    display.drawString(0, 26, "MOTION DETECTED!");
-    display.drawString(0, 36, "Location: Door");
-    display.drawString(0, 46, "Alert: ACTIVE");
+  // Animated status info - COMPACT LIKE OLED_1
+  if (sensors.fireDetected) {
+    if (alertFlashing) {
+      display.drawString(0, 26, ">>> FIRE! <<<");
+      display.drawString(0, 36, ">>> EMERGENCY! <<<");
+      display.drawString(0, 46, ">>> EVACUATE! <<<");
+    } else {
+      display.drawString(0, 26, "FIRE DETECTED!");
+      display.drawString(0, 36, "EMERGENCY!");
+      display.drawString(0, 46, "EVACUATE NOW!");
+    }
+  } else if (sensors.motionDetected) {
+    if (alertFlashing) {
+      display.drawString(0, 26, ">>> MOTION! <<<");
+      display.drawString(0, 36, ">>> INTRUDER! <<<");
+      display.drawString(0, 46, ">>> ALERT! <<<");
+    } else {
+      display.drawString(0, 26, "MOTION DETECTED!");
+      display.drawString(0, 36, "Location: Door");
+      display.drawString(0, 46, "Alert: ACTIVE");
+    }
   } else {
+    // Normal status with animated heartbeat effect
     display.drawString(0, 26, "System: SECURE");
     display.drawString(0, 36, "Temp: " + String(sensors.temperature, 1) + "C");
     display.drawString(0, 46, "Humid: " + String(sensors.humidity, 0) + "%");
+    
+    // Add small animated indicator for normal operation
+    if (alertFlashing) { // Reuse the flashing variable for heartbeat
+      display.fillCircle(120, 55, 2);
+    } else {
+      display.drawCircle(120, 55, 2);
+    }
   }
 }
 
 void showSensorPage() {
-  // EXACTLY LIKE OLED_1 showSensorData()
-  display.drawXbm(0, 13, 16, 16, temp_icon);
+  // Animated temperature icon
+  if (sensors.temperature > 30) {
+    display.drawXbm(0, 13, 16, 16, temp_alt1); // Hot temperature icon
+  } else {
+    display.drawXbm(0, 13, 16, 16, temp_icon);
+  }
   
   display.setFont(ArialMT_Plain_10);
   display.drawString(18, 13, "Sensors");
@@ -400,11 +431,24 @@ void showSensorPage() {
   display.drawString(0, 26, "Temp: " + String(sensors.temperature) + "C");
   display.drawString(0, 36, "Humid: " + String(sensors.humidity) + "%");
   display.drawString(0, 46, "Air: Good");
+  
+  // Add animated sensor activity indicators
+  if (alertFlashing) {
+    display.drawString(100, 26, "*");
+    display.drawString(100, 36, "*");
+  } else {
+    display.drawString(100, 26, "o");
+    display.drawString(100, 36, "o");
+  }
 }
 
 void showSystemPage() {
-  // EXACTLY LIKE OLED_1 showSystemInfo()
-  display.drawXbm(0, 13, 16, 16, system_icon);
+  // Animated system icon based on system health
+  if (sensors.freeHeap < 10000) {
+    display.drawXbm(0, 13, 16, 16, warning_icon); // Low memory warning
+  } else {
+    display.drawXbm(0, 13, 16, 16, system_icon);
+  }
   
   display.setFont(ArialMT_Plain_10);
   display.drawString(18, 13, "System");
@@ -412,6 +456,17 @@ void showSystemPage() {
   display.drawString(0, 26, "Heap: " + String(sensors.freeHeap / 1024) + "KB");
   display.drawString(0, 36, "Up: " + String(sensors.uptime) + "s");
   display.drawString(0, 46, "WiFi: " + String(WiFi.status() == WL_CONNECTED ? "OK" : "NO"));
+  
+  // Add system activity indicator
+  if (alertFlashing) {
+    display.fillRect(120, 26, 3, 3);
+    display.fillRect(120, 36, 3, 3);
+    display.fillRect(120, 46, 3, 3);
+  } else {
+    display.drawRect(120, 26, 3, 3);
+    display.drawRect(120, 36, 3, 3);
+    display.drawRect(120, 46, 3, 3);
+  }
 }
 
 void showAlertsPage() {
@@ -438,11 +493,9 @@ void showAlertsPage() {
     display.drawString(0, 36, "Door: " + String(sensors.doorOpen ? "Open" : "Closed"));
     display.drawString(0, 46, "Motion: None");
   }
-
 }
 
 void showSettingsPage() {
-  // Draw settings icon
   display.drawXbm(0, 13, 16, 16, settings_icon);
   
   display.setFont(ArialMT_Plain_10);
@@ -486,6 +539,7 @@ void applyTheme() {
       break;
   }
 }
+
 String getThemeName() {
   switch (config.theme) {
     case THEME_NORMAL: return "Normal";
