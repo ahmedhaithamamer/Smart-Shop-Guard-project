@@ -42,7 +42,7 @@ unsigned long lastStatusPrint = 0;
 unsigned long lastOLEDUpdate = 0;
 
 // OLED update interval (reduce CPU usage)
-const unsigned long oledUpdateInterval = 500; // Update every 500ms
+const unsigned long oledUpdateInterval = 1000; // Update every 1000ms (reduced since we have immediate updates)
 
 // Function declarations for main logic
 void processNightMode();
@@ -50,20 +50,46 @@ void processDayMode();
 void fanTempLCD();
 
 void setup() {
+  // Configure watchdog timer for stability
+  esp_task_wdt_init(10, true);  // 10 second timeout
+  esp_task_wdt_add(NULL);       // Add current task to watchdog
+  
+  // Add small delay for power stabilization
+  delay(1000);
+  
   // Initialize system components
   initSystem();
   
-  // Initialize hardware modules
+  // Initialize hardware modules with watchdog resets
+  Serial.println("Initializing displays...");
   initDisplay();      // Initialize LCD
-  initOLEDDisplay();  // Initialize OLED
-  initSensors();
-  initActuators();
-  initAudio();
+  esp_task_wdt_reset();
   
-  // Initialize WiFi and Blynk
+  initOLEDDisplay();  // Initialize OLED
+  esp_task_wdt_reset();
+  
+  Serial.println("Initializing sensors...");
+  initSensors();
+  esp_task_wdt_reset();
+  
+  initActuators();
+  esp_task_wdt_reset();
+  
+  initAudio();
+  esp_task_wdt_reset();
+  
+  // Initialize WiFi and Blynk with power management
+  Serial.println("Connecting to WiFi...");
+  esp_task_wdt_reset();
+  
   if (initWiFi()) {
+    Serial.println("WiFi connected, initializing Blynk...");
+    esp_task_wdt_reset();
     initBlynk();
     connectBlynk();
+    esp_task_wdt_reset();
+  } else {
+    Serial.println("WiFi failed, continuing without cloud connection...");
   }
   
   // Play startup sequence
@@ -74,6 +100,26 @@ void setup() {
   // OLED welcome is handled in initOLEDDisplay() with intro animation
   
   displayModeStatus();  // Show on LCD
+  displayOLEDModeStatus();  // Show on OLED
+  
+  // Print system information for debugging
+  Serial.println("=== System Information ===");
+  Serial.printf("Free heap: %d bytes\n", ESP.getFreeHeap());
+  Serial.printf("CPU frequency: %d MHz\n", ESP.getCpuFreqMHz());
+  Serial.printf("Flash size: %d bytes\n", ESP.getFlashChipSize());
+  
+  // Enhanced PSRAM detection
+  Serial.printf("PSRAM size: %d bytes\n", ESP.getPsramSize());
+  Serial.printf("Free PSRAM: %d bytes\n", ESP.getFreePsram());
+  Serial.printf("PSRAM found: %s\n", psramFound() ? "YES" : "NO");
+  
+  #ifdef BOARD_HAS_PSRAM
+    Serial.println("PSRAM support compiled in");
+  #else
+    Serial.println("PSRAM support NOT compiled in");
+  #endif
+  
+  Serial.println("Setup complete!");
 }
 
 void loop() {
@@ -85,7 +131,8 @@ void loop() {
   // Handle OLED button navigation and updates
   handleOLEDButtons();
   
-  // Update OLED display at regular intervals
+  // Update OLED display at regular intervals (for page navigation)
+  // Critical updates (alerts, temp changes) are handled immediately via displayOLED* functions
   if (millis() - lastOLEDUpdate > oledUpdateInterval) {
     updateOLEDDisplay();
     lastOLEDUpdate = millis();
@@ -112,11 +159,11 @@ void processNightMode() {
     playAlertTone();
     activateRelay();
     displayFireAlert();  // LCD alert
-    // OLED alert is handled via fireDetected flag in OLED display
+    displayOLEDFireAlert();  // OLED alert
   } else {
     deactivateRelay();
     displaySafeStatus();  // LCD status
-    // OLED status is handled via fireDetected flag in OLED display
+    displayOLEDSafeStatus();  // OLED status
   }
   
   // Handle ultrasonic and servo for automatic door
@@ -134,19 +181,26 @@ void processDayMode() {
     playAlertTone();
     activateRelay();
     displayFireAlert();  // LCD alert
-    // OLED alert is handled via fireDetected flag in OLED display
+    displayOLEDFireAlert();  // OLED alert
   } else {
     deactivateRelay();
     displaySafeStatus();  // LCD status
-    // OLED status is handled via fireDetected flag in OLED display
+    displayOLEDSafeStatus();  // OLED status
   }
   
   // Check motion sensor for theft detection
   readMotion();
   if (isMotionDetected()) {
     displayThiefAlert();  // LCD alert
-    // OLED alert is handled via motionDetected flag in OLED display
+    displayOLEDThiefAlert();  // OLED alert
     playAlertTone();
+  } else {
+    // Clear motion alert when no motion is detected (for OLED sync)
+    extern bool motionDetected;
+    if (motionDetected) {
+      motionDetected = false;
+      updateOLEDDisplay();  // Update OLED to show clear status
+    }
   }
 }
 
@@ -157,9 +211,7 @@ void fanTempLCD() {
   // Control fan based on readings
   controlFan(t, h);
   
-  // Display readings on LCD (original functionality preserved)
-  displayTemperatureHumidity(t, h);
-  
-  // OLED displays temperature/humidity in its sensor page automatically
-  // via the global t and h variables
+  // Display readings on both displays for immediate synchronization
+  displayTemperatureHumidity(t, h);  // LCD
+  displayOLEDTemperatureHumidity(t, h);  // OLED (immediate sync)
 }

@@ -1,6 +1,7 @@
 #include "blynk_handlers.h"
 #include "audio.h"
 #include "display.h"
+#include "oled_display.h"
 
 void initBlynk() {
     Blynk.config(BLYNK_AUTH_TOKEN);
@@ -18,7 +19,8 @@ bool isBlynkConnected() {
 BLYNK_WRITE(VPIN_DAY_NIGHT) {
     isDay = param.asInt();
     playModeSwitchTone();
-    displayModeStatus();
+    displayModeStatus();  // LCD
+    displayOLEDModeStatus();  // OLED
 }
 
 BLYNK_WRITE(VPIN_AC_CONTROL) {

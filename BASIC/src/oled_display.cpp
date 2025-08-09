@@ -123,39 +123,43 @@ void clearOLEDDisplay() {
   display.clear();
 }
 
-void displayTemperatureHumidity(int temperature, int humidity) {
-  // This function is called from main.cpp, but we'll handle display in updateOLEDDisplay()
-  // Just update the global variables
-  // t and h are already global variables in main.cpp
+void displayOLEDTemperatureHumidity(int temperature, int humidity) {
+  // Force immediate OLED update with new temperature/humidity values
+  // This ensures synchronization with LCD display
+  updateOLEDDisplay();
 }
 
-void displayWelcomeMessage() {
+void displayOLEDWelcomeMessage() {
   // Welcome message is now handled by showIntro()
   showIntro();
 }
 
-void displayModeStatus() {
+void displayOLEDModeStatus() {
   display.clear();
   display.setFont(ArialMT_Plain_16);
   display.drawString(15, 15, "Mode: ");
-  display.drawString(15, 35, isDay ? "Day" : "Night");
+  display.drawString(15, 35, isDay ? "Night" : "Day");
   display.display();
-  delay(2000);
+  delay(1000);  // Reduced delay for better sync
+  updateOLEDDisplay();  // Return to normal display after mode status
 }
 
-void displayFireAlert() {
+void displayOLEDFireAlert() {
   fireDetected = true;
   alertFlashing = true;
+  updateOLEDDisplay();  // Force immediate update for sync
 }
 
-void displaySafeStatus() {
+void displayOLEDSafeStatus() {
   fireDetected = false;
   alertFlashing = false;
+  updateOLEDDisplay();  // Force immediate update for sync
 }
 
-void displayThiefAlert() {
+void displayOLEDThiefAlert() {
   motionDetected = true;
   alertFlashing = true;
+  updateOLEDDisplay();  // Force immediate update for sync
 }
 
 void updateOLEDDisplay() {
@@ -186,86 +190,86 @@ void showCurrentPage() {
 
 void showStatusPage() {
   // Draw shield icon for status
-  display.drawXbm(0, 13, 16, 16, shield_icon);
+  display.drawXbm(0, 5, 16, 16, shield_icon);
   
   display.setFont(ArialMT_Plain_10);
-  display.drawString(18, 13, "Status");
+  display.drawString(18, 5, "Status");
   
-  // Status info - COMPACT LIKE OLED_1
+  // Status info - COMPACT LIKE OLED_1 (moved up 8 pixels)
   if (fireDetected && alertFlashing) {
-    display.drawString(0, 26, "FIRE DETECTED!");
-    display.drawString(0, 36, "EMERGENCY!");
-    display.drawString(0, 46, "EVACUATE NOW!");
+    display.drawString(0, 20, "FIRE DETECTED!");
+    display.drawString(0, 30, "EMERGENCY!");
+    display.drawString(0, 40, "EVACUATE NOW!");
   } else if (motionDetected && alertFlashing) {
-    display.drawString(0, 26, "MOTION DETECTED!");
-    display.drawString(0, 36, "Location: Door");
-    display.drawString(0, 46, "Alert: ACTIVE");
+    display.drawString(0, 20, "MOTION DETECTED!");
+    display.drawString(0, 30, "Location: Door");
+    display.drawString(0, 40, "Alert: ACTIVE");
   } else {
-    display.drawString(0, 26, "System: SECURE");
-    display.drawString(0, 36, "Temp: " + String(t, 1) + "C");
-    display.drawString(0, 46, "Humid: " + String(h, 0) + "%");
+    display.drawString(0, 20, "System: SECURE");
+    display.drawString(0, 30, "Temp: " + String(t) + "C");
+    display.drawString(0, 40, "Humid: " + String(h) + "%");
   }
 }
 
 void showSensorPage() {
   // EXACTLY LIKE OLED_1 showSensorData()
-  display.drawXbm(0, 13, 16, 16, temp_icon);
+  display.drawXbm(0, 5, 16, 16, temp_icon);
   
   display.setFont(ArialMT_Plain_10);
-  display.drawString(18, 13, "Sensors");
+  display.drawString(18, 5, "Sensors");
   
-  // Sensor readings
-  display.drawString(0, 26, "Temperature: " + String(t) + "C");
-  display.drawString(0, 36, "Humidity: " + String(h) + "%");
-  display.drawString(0, 46, "AC: " + String(AC ? "ON" : "OFF"));
+  // Sensor readings (moved up 8 pixels)
+  display.drawString(0, 20, "Temperature: " + String(t) + "C");
+  display.drawString(0, 30, "Humidity: " + String(h) + "%");
+  display.drawString(0, 40, "AC: " + String(AC ? "ON" : "OFF"));
   
   // Fire sensor status
-  display.drawString(0, 56, fireDetected ? "Fire: YES" : "Fire: NO");
+  display.drawString(0, 48, fireDetected ? "Fire: YES" : "Fire: NO");
 }
 
 void showSystemPage() {
-  display.drawXbm(0, 13, 16, 16, system_icon);
+  display.drawXbm(0, 5, 16, 16, system_icon);
   
   display.setFont(ArialMT_Plain_10);
-  display.drawString(18, 13, "System");
+  display.drawString(18, 5, "System");
   
-  // System information
-  display.drawString(0, 26, "WiFi: Connected");
-  display.drawString(0, 36, "Mode: " + String(isDay ? "Day" : "Night"));
-  display.drawString(0, 46, "Uptime: " + String(millis() / 1000) + "s");
-  display.drawString(0, 56, "Memory: " + String(ESP.getFreeHeap()) + "B");
+  // System information (moved up 8 pixels)
+  display.drawString(0, 20, "WiFi: Connected");
+  display.drawString(0, 30, "Mode: " + String(isDay ? "Night" : "Day"));
+  display.drawString(0, 40, "Uptime: " + String(millis() / 1000) + "s");
+  display.drawString(0, 50, "Memory: " + String(ESP.getFreeHeap()/1000) + "KB");
 }
 
 void showAlertsPage() {
-  display.drawXbm(0, 13, 16, 16, alert_icon);
+  display.drawXbm(0, 5, 16, 16, alert_icon);
   
   display.setFont(ArialMT_Plain_10);
-  display.drawString(18, 13, "Alerts");
+  display.drawString(18, 5, "Alerts");
   
-  // Alert status
+  // Alert status (moved up 8 pixels)
   if (fireDetected) {
-    display.drawString(0, 26, "FIRE ALERT ACTIVE");
-    display.drawString(0, 36, "Check fire sensor");
+    display.drawString(0, 20, "FIRE ALERT ACTIVE");
+    display.drawString(0, 30, "Check fire sensor");
   } else if (motionDetected) {
-    display.drawString(0, 26, "MOTION DETECTED");
-    display.drawString(0, 36, "Security breach");
+    display.drawString(0, 20, "MOTION DETECTED");
+    display.drawString(0, 30, "Security breach");
   } else {
-    display.drawString(0, 26, "All Clear");
-    display.drawString(0, 36, "No active alerts");
-    display.drawString(0, 46, "System secure");
+    display.drawString(0, 20, "All Clear");
+    display.drawString(0, 30, "No active alerts");
+    display.drawString(0, 40, "System secure");
   }
 }
 
 void showSettingsPage() {
-  display.drawXbm(0, 13, 16, 16, settings_icon);
+  display.drawXbm(0, 5, 16, 16, settings_icon);
   
   display.setFont(ArialMT_Plain_10);
-  display.drawString(18, 13, "Settings");
+  display.drawString(18, 5, "Settings");
   
-  // Settings menu
-  display.drawString(0, 26, "Theme: " + String(oledConfig.theme == THEME_NORMAL ? "Normal" : "Invert"));
-  display.drawString(0, 36, "Auto-Swipe: " + String(oledConfig.auto_swipe ? "ON" : "OFF"));
-  display.drawString(0, 46, "Pages: " + String(totalPages));
+  // Settings menu (moved up 8 pixels)
+  display.drawString(0, 20, "Theme: " + String(oledConfig.theme == THEME_NORMAL ? "Normal" : "Invert"));
+  display.drawString(0, 30, "Auto-Swipe: " + String(oledConfig.auto_swipe ? "ON" : "OFF"));
+  display.drawString(0, 40, "Pages: " + String(totalPages));
 }
 
 void handleOLEDButtons() {

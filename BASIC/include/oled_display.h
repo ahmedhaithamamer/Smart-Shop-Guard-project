@@ -5,6 +5,7 @@
 #include "icons.h"
 #include <SH1106Wire.h>
 #include <Arduino.h>
+#include <Wire.h>
 
 // External variables from main.cpp
 extern int t;  // Temperature
@@ -55,14 +56,14 @@ extern bool doorOpen;
 // OLED Display initialization
 void initOLEDDisplay();
 
-// Main display functions (replacing LCD functions)
+// Main display functions (OLED-specific to avoid LCD conflicts)
 void clearOLEDDisplay();
-void displayTemperatureHumidity(int temperature, int humidity);
-void displayWelcomeMessage();
-void displayModeStatus();
-void displayFireAlert();
-void displaySafeStatus();
-void displayThiefAlert();
+void displayOLEDTemperatureHumidity(int temperature, int humidity);
+void displayOLEDWelcomeMessage();
+void displayOLEDModeStatus();
+void displayOLEDFireAlert();
+void displayOLEDSafeStatus();
+void displayOLEDThiefAlert();
 
 // OLED-specific functions
 void showIntro();
