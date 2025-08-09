@@ -17,6 +17,8 @@ void initSystem();
 bool initWiFi();
 bool isWiFiConnected();
 void printWiFiStatus();
+void handleWiFiReconnection();  // Background WiFi reconnection
+String getWiFiStatus();         // Get WiFi status for OLED display
 
 // Serial communication
 void initSerial();

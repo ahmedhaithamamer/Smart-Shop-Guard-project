@@ -79,7 +79,7 @@ void setup() {
   esp_task_wdt_reset();
   
   // Initialize WiFi and Blynk with power management
-  Serial.println("Connecting to WiFi...");
+  Serial.println("Attempting WiFi connection (15 second timeout)...");
   esp_task_wdt_reset();
   
   if (initWiFi()) {
@@ -88,8 +88,10 @@ void setup() {
     initBlynk();
     connectBlynk();
     esp_task_wdt_reset();
+    Serial.println("Cloud services initialized successfully!");
   } else {
-    Serial.println("WiFi failed, continuing without cloud connection...");
+    Serial.println("Starting in offline mode...");
+    Serial.println("System will attempt WiFi reconnection every 30 seconds");
   }
   
   // Play startup sequence
@@ -126,7 +128,13 @@ void loop() {
   // Reset watchdog timer
   esp_task_wdt_reset();
   
-  Blynk.run();
+  // Handle WiFi reconnection in background
+  handleWiFiReconnection();
+  
+  // Only run Blynk if WiFi is connected
+  if (isWiFiConnected()) {
+    Blynk.run();
+  }
   
   // Handle OLED button navigation and updates
   handleOLEDButtons();

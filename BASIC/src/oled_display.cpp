@@ -208,6 +208,14 @@ void showStatusPage() {
     display.drawString(0, 20, "System: SECURE");
     display.drawString(0, 30, "Temp: " + String(t) + "C");
     display.drawString(0, 40, "Humid: " + String(h) + "%");
+    
+    // Add WiFi status indicator on status page
+    display.setFont(ArialMT_Plain_10);
+    if (isWiFiConnected()) {
+      display.drawString(90, 20, "WiFi:OK");
+    } else {
+      display.drawString(90, 20, "WiFi:--");
+    }
   }
 }
 
@@ -233,8 +241,8 @@ void showSystemPage() {
   display.setFont(ArialMT_Plain_10);
   display.drawString(18, 5, "System");
   
-  // System information (moved up 8 pixels)
-  display.drawString(0, 20, "WiFi: Connected");
+  // System information with dynamic WiFi status
+  display.drawString(0, 20, getWiFiStatus());
   display.drawString(0, 30, "Mode: " + String(isDay ? "Night" : "Day"));
   display.drawString(0, 40, "Uptime: " + String(millis() / 1000) + "s");
   display.drawString(0, 50, "Memory: " + String(ESP.getFreeHeap()/1000) + "KB");
