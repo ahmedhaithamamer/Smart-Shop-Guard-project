@@ -1,9 +1,12 @@
 #ifndef ACTUATORS_H
 #define ACTUATORS_H
 
-#include "config.h"
-#include <ESP32Servo.h>
 #include <Arduino.h>
+#include <ESP32Servo.h>
+#include "config.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
 
 // External variables
 extern Servo myServo;
@@ -32,5 +35,8 @@ void deactivateRelay();
 void initBuzzer();
 void turnOnBuzzer();
 void turnOffBuzzer();
+
+// RTOS task
+void TaskActuators(void* pvParameters);
 
 #endif // ACTUATORS_H

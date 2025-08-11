@@ -3,7 +3,7 @@
 void initActuators() {
     // Set pin modes for actuators
     pinMode(FAN_PIN, OUTPUT);
-    pinMode(BUZZER_PIN, OUTPUT);
+    // BUZZER_PIN initialization handled by audio.cpp to avoid conflicts
     pinMode(RELAY_PIN, OUTPUT);
     
     // Initialize servo
@@ -11,7 +11,7 @@ void initActuators() {
     
     // Initialize all actuators to OFF state
     turnOffFan();
-    turnOffBuzzer();
+    // turnOffBuzzer(); // Buzzer handled by audio.cpp
     deactivateRelay();
 }
 
@@ -48,15 +48,13 @@ void moveServo() {
     }
 
     myServo.write(degree);
-    delay(15);
-    yield(); // Allow other tasks to run
+    // Non-blocking: removed delay(15)
 }
 
 void setServoPosition(int position) {
     degree = position;
     myServo.write(degree);
-    delay(15);
-    yield(); // Allow other tasks to run
+    // Non-blocking: removed delay(15)
 }
 
 void activateRelay() {

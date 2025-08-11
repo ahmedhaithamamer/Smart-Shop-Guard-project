@@ -6,6 +6,9 @@
 #include <SH1106Wire.h>
 #include <Arduino.h>
 #include <Wire.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
 
 // External variables from main.cpp
 extern int t;  // Temperature
@@ -79,5 +82,8 @@ void showSettingsPage();
 // Utility functions
 void drawProgressBar(int x, int y, int width, int height, int percentage);
 void animateAlert();
+
+// RTOS task
+void TaskOLED(void* pvParameters);
 
 #endif // OLED_DISPLAY_H

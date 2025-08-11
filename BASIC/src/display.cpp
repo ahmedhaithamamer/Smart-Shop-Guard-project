@@ -38,11 +38,11 @@ void displayWelcomeMessage() {
     for (int i = 0; i < 3; i++) {
         lcd.setCursor(4, 0);
         lcd.print("Welcome!");
-        delay(STARTUP_DISPLAY_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(STARTUP_DISPLAY_DELAY));   
         esp_task_wdt_reset(); // Reset watchdog during delay
         yield(); // Allow other tasks to run
         lcd.clear();
-        delay(200);
+        vTaskDelay(pdMS_TO_TICKS(200));   
         esp_task_wdt_reset(); // Reset watchdog during delay
         yield(); // Allow other tasks to run
     }
@@ -53,13 +53,13 @@ void displayModeStatus() {
     lcd.setCursor(0, 0);
     lcd.print("Mode: ");
     lcd.print(isDay ? "Night" : "Day");
-    delay(MODE_DISPLAY_DELAY);
+    vTaskDelay(pdMS_TO_TICKS(MODE_DISPLAY_DELAY));   
     esp_task_wdt_reset(); // Reset watchdog during delay
     yield(); // Allow other tasks to run
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Smart Shop Guard");
-    delay(MODE_DISPLAY_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(MODE_DISPLAY_DELAY));   
     esp_task_wdt_reset(); // Reset watchdog during delay
     yield(); // Allow other tasks to run
 }

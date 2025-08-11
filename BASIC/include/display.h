@@ -4,6 +4,9 @@
 #include "config.h"
 #include <LiquidCrystal_I2C.h>
 #include <Arduino.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
 
 // External variables
 extern LiquidCrystal_I2C lcd;
@@ -28,5 +31,8 @@ void displayNormalStatus();
 void displayFireAlert();
 void displaySafeStatus();
 void displayThiefAlert();
+
+// RTOS tasks
+void TaskLCD(void* pvParameters);
 
 #endif // DISPLAY_H

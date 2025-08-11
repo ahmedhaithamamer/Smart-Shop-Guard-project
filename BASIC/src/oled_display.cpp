@@ -48,7 +48,7 @@ void initOLEDButtons() {
   pinMode(BUTTON_PREV, INPUT_PULLUP);
   
   // Small delay to stabilize button states
-  delay(100);
+  vTaskDelay(pdMS_TO_TICKS(100));
   
   Serial.println("OLED buttons initialized - NEXT: " + String(BUTTON_NEXT) + ", PREV: " + String(BUTTON_PREV));
 }
@@ -66,11 +66,11 @@ void showIntro() {
     display.clear();
     display.drawString(15, 15, line1.substring(0, i));
     display.display();
-    delay(100); // Reduced from 150ms
+    vTaskDelay(pdMS_TO_TICKS(100)); // Reduced from 150ms
     esp_task_wdt_reset(); // Reset watchdog during animation
   }
   
-  delay(200); // Reduced from 300ms
+  vTaskDelay(pdMS_TO_TICKS(200)); // Reduced from 300ms
   esp_task_wdt_reset();
   
   // Show "Guard" letter by letter with shield icon
@@ -86,18 +86,18 @@ void showIntro() {
     }
     
     display.display();
-    delay(100); // Reduced from 150ms
+    vTaskDelay(pdMS_TO_TICKS(100)); // Reduced from 150ms
     esp_task_wdt_reset(); // Reset watchdog during animation
   }
   
-  delay(300); // Reduced from 500ms
+  vTaskDelay(pdMS_TO_TICKS(300)); // Reduced from 500ms
   esp_task_wdt_reset();
   
   // Animation 2: Blinking effect with shield icon (reduced iterations)
   for (int i = 0; i < 2; i++) { // Reduced from 3 to 2 iterations
     display.clear();
     display.display();
-    delay(150); // Reduced from 200ms
+    vTaskDelay(pdMS_TO_TICKS(150)); // Reduced from 200ms
     esp_task_wdt_reset();
     
     display.clear();
@@ -105,7 +105,7 @@ void showIntro() {
     display.drawString(35, 30, "Guard");
     display.drawXbm(80, 32, 16, 16, shield_icon);
     display.display();
-    delay(200); // Reduced from 300ms
+    vTaskDelay(pdMS_TO_TICKS(200)); // Reduced from 300ms
     esp_task_wdt_reset();
   }
   
@@ -126,7 +126,7 @@ void showIntro() {
     display.fillCircle(128 - x, 58, 1);
     
     display.display();
-    delay(80); // Reduced from 100ms
+    vTaskDelay(pdMS_TO_TICKS(80)); // Reduced from 100ms
     esp_task_wdt_reset(); // Reset watchdog during animation
   }
   
@@ -136,7 +136,7 @@ void showIntro() {
   display.drawString(35, 30, "Guard");
   display.drawXbm(80, 32, 16, 16, shield_icon);
   display.display();
-  delay(400); // Reduced from 800ms
+  vTaskDelay(pdMS_TO_TICKS(400)); // Reduced from 800ms
   esp_task_wdt_reset();
 }
 
@@ -161,7 +161,7 @@ void displayOLEDModeStatus() {
   display.drawString(15, 15, "Mode: ");
   display.drawString(15, 35, isDay ? "Night" : "Day");
   display.display();
-  delay(1000);  // Reduced delay for better sync
+  vTaskDelay(pdMS_TO_TICKS(1000));  // Reduced delay for better sync
   esp_task_wdt_reset(); // Reset watchdog after delay
   updateOLEDDisplay();  // Return to normal display after mode status
 }
@@ -275,13 +275,13 @@ void handleButtons() {
       
       // Visual feedback - flash the display
       display.invertDisplay();
-      delay(100);
+      vTaskDelay(pdMS_TO_TICKS(100));
       esp_task_wdt_reset();
       display.normalDisplay();
-      delay(100);
+      vTaskDelay(pdMS_TO_TICKS(100));
       esp_task_wdt_reset();
       display.invertDisplay();
-      delay(100);
+      vTaskDelay(pdMS_TO_TICKS(100));
       esp_task_wdt_reset();
       display.normalDisplay();
       // Display restored to normal mode
@@ -452,7 +452,7 @@ void showSystemPage() {
   
   // System information with dynamic WiFi status
   display.drawString(0, 20, getWiFiStatus());
-  display.drawString(0, 30, "Mode: " + String(isDay ? "Night" : "Day"));
+  display.drawString(0, 30, "Mode: " + String(isDay ? "Day" : "Night"));
   display.drawString(0, 40, "Uptime: " + String(millis() / 1000) + "s");
   display.drawString(0, 50, "Memory: " + String(ESP.getFreeHeap()/1000) + "KB");
 }
