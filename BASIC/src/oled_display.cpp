@@ -340,6 +340,10 @@ void showCurrentPage() {
       break;
   }
 }
+// TODO: Implement Bluetooth connection status
+bool isBluetoothConnected(){
+  return true;
+}
 
 void showStatusPage() {
   // Draw shield icon for status
@@ -348,9 +352,14 @@ void showStatusPage() {
     display.drawXbm(120, 5, 8 , 8, wifi_icon_connected);
   }
   else{
-    display.setFont(ArialMT_Plain_10);
-    display.drawString(100, 5, "Not Connected"); 
+    display.drawXbm(120, 5, 8 , 8, wifi_icon_disconnected);
   }
+  if(isBluetoothConnected()){
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon);
+  }
+  else{
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon_disconnected);
+  } 
   
   display.setFont(ArialMT_Plain_10);
   display.drawString(18, 5, "Status");
@@ -386,8 +395,13 @@ void showSensorPage() {
     display.drawXbm(120, 5, 8, 8, wifi_icon_connected);
   }
   else{
-    display.setFont(ArialMT_Plain_10);
-    display.drawString(100, 5, "Not Connected"); 
+    display.drawXbm(120, 5, 8, 8, wifi_icon_disconnected);
+  }  
+  if(isBluetoothConnected()){
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon);
+  }
+  else{
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon_disconnected);
   }  
   display.setFont(ArialMT_Plain_10);
   display.drawString(18, 5, "Sensors");
@@ -407,8 +421,13 @@ void showSystemPage() {
     display.drawXbm(120, 5, 8, 8, wifi_icon_connected);
   }
   else{
-    display.setFont(ArialMT_Plain_10);
-    display.drawString(100, 5, "Not Connected"); 
+    display.drawXbm(120, 5, 8, 8, wifi_icon_disconnected);
+  }  
+  if(isBluetoothConnected()){
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon);
+  }
+  else{
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon_disconnected);
   }  
   display.setFont(ArialMT_Plain_10);
   display.drawString(18, 5, "System");
@@ -426,8 +445,13 @@ void showAlertsPage() {
     display.drawXbm(120, 5, 8, 8, wifi_icon_connected);
   }
   else{
-    display.setFont(ArialMT_Plain_10);
-    display.drawString(100, 5, "Not Connected"); 
+    display.drawXbm(120, 5, 8, 8, wifi_icon_disconnected);
+  }  
+  if(isBluetoothConnected()){
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon);
+  }
+  else{
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon_disconnected);
   }  
   display.setFont(ArialMT_Plain_10);
   display.drawString(18, 5, "Alerts");
@@ -460,8 +484,13 @@ void showSettingsPage() {
       display.drawXbm(120, 5, 8, 8, wifi_icon_connected);
   }
   else{
-    display.setFont(ArialMT_Plain_10);
-    display.drawString(100, 5, "Not Connected"); 
+      display.drawXbm(120, 5, 8, 8, wifi_icon_disconnected);
+  }  
+  if(isBluetoothConnected()){
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon);
+  }
+  else{
+    display.drawXbm(110, 5, 8, 8, Bluetooth_icon_disconnected);
   }  
   display.setFont(ArialMT_Plain_10);
   display.drawString(18, 5, "Settings");
