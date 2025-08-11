@@ -79,7 +79,7 @@ void setup() {
   esp_task_wdt_reset();
   
   // Initialize WiFi and Blynk with power management
-  Serial.println("Attempting WiFi connection (15 second timeout)...");
+  Serial.println("Attempting WiFi connection (5 second timeout)...");
   esp_task_wdt_reset();
   
   if (initWiFi()) {
@@ -96,13 +96,18 @@ void setup() {
   
   // Play startup sequence
   playStartupTone();
+  esp_task_wdt_reset();
   
-  // Show welcome on both displays
+  // Show welcome on both displays (with reduced delays)
+  Serial.println("Showing welcome messages...");
   displayWelcomeMessage();  // LCD welcome (blinking)
+  esp_task_wdt_reset();
   // OLED welcome is handled in initOLEDDisplay() with intro animation
   
   displayModeStatus();  // Show on LCD
+  esp_task_wdt_reset();
   displayOLEDModeStatus();  // Show on OLED
+  esp_task_wdt_reset();
   
   // Print system information for debugging
   Serial.println("=== System Information ===");
@@ -142,7 +147,11 @@ void loop() {
   // Update OLED display at regular intervals (for page navigation)
   // Critical updates (alerts, temp changes) are handled immediately via displayOLED* functions
   if (millis() - lastOLEDUpdate > oledUpdateInterval) {
-    updateOLEDDisplay();
+    // Only update if no hazards are active (to prevent overriding hazard display)
+    extern bool fireDetected, motionDetected;
+    if (!fireDetected && !motionDetected) {
+      updateOLEDDisplay();
+    }
     lastOLEDUpdate = millis();
   }
   
@@ -166,12 +175,28 @@ void processNightMode() {
   if (isFlameDetected()) {
     playAlertTone();
     activateRelay();
-    displayFireAlert();  // LCD alert
-    displayOLEDFireAlert();  // OLED alert
+    
+    // SYNC BOTH DISPLAYS - Fire Alert
+    displayFireAlert();      // LCD: FIRE ALERT! + EVACUATE NOW!
+    displayOLEDFireAlert();  // OLED: Switches to alerts page, shows fire alert
+    
+    Serial.println("=== FIRE HAZARD ACTIVE ===");
+    Serial.println("LCD: Fire alert displayed");
+    Serial.println("OLED: Fire alert displayed - page cycling paused");
   } else {
     deactivateRelay();
-    displaySafeStatus();  // LCD status
-    displayOLEDSafeStatus();  // OLED status
+    
+    // Check if fire was previously detected (using OLED variable)
+    extern bool fireDetected;
+    if (fireDetected) {
+      // SYNC BOTH DISPLAYS - Safe Status
+      displaySafeStatus();      // LCD: Smart Shop Guard + temp/humidity
+      displayOLEDSafeStatus();  // OLED: Resumes normal operation
+      
+      Serial.println("=== FIRE HAZARD CLEARED ===");
+      Serial.println("LCD: Safe status displayed");
+      Serial.println("OLED: Safe status - resuming normal operation");
+    }
   }
   
   // Handle ultrasonic and servo for automatic door
@@ -188,26 +213,53 @@ void processDayMode() {
   if (isFlameDetected()) {
     playAlertTone();
     activateRelay();
-    displayFireAlert();  // LCD alert
-    displayOLEDFireAlert();  // OLED alert
+    
+    // SYNC BOTH DISPLAYS - Fire Alert
+    displayFireAlert();      // LCD: FIRE ALERT! + EVACUATE NOW!
+    displayOLEDFireAlert();  // OLED: Switches to alerts page, shows fire alert
+    
+    Serial.println("=== FIRE HAZARD ACTIVE ===");
+    Serial.println("LCD: Fire alert displayed");
+    Serial.println("OLED: Fire alert displayed - page cycling paused");
   } else {
     deactivateRelay();
-    displaySafeStatus();  // LCD status
-    displayOLEDSafeStatus();  // OLED status
+    
+    // Check if fire was previously detected (using OLED variable)
+    extern bool fireDetected;
+    if (fireDetected) {
+      // SYNC BOTH DISPLAYS - Safe Status
+      displaySafeStatus();      // LCD: Smart Shop Guard + temp/humidity
+      displayOLEDSafeStatus();  // OLED: Resumes normal operation
+      
+      Serial.println("=== FIRE HAZARD CLEARED ===");
+      Serial.println("LCD: Safe status displayed");
+      Serial.println("OLED: Safe status - resuming normal operation");
+    }
   }
   
   // Check motion sensor for theft detection
   readMotion();
   if (isMotionDetected()) {
-    displayThiefAlert();  // LCD alert
-    displayOLEDThiefAlert();  // OLED alert
+    // SYNC BOTH DISPLAYS - Thief Alert
+    displayThiefAlert();      // LCD: THIEF ALERT! + Security Breach!
+    displayOLEDThiefAlert();  // OLED: Switches to alerts page, shows thief alert
+    
+    Serial.println("=== MOTION HAZARD ACTIVE ===");
+    Serial.println("LCD: Thief alert displayed");
+    Serial.println("OLED: Thief alert displayed - page cycling paused");
+    
     playAlertTone();
   } else {
-    // Clear motion alert when no motion is detected (for OLED sync)
+    // Clear motion alert when no motion is detected (for both displays)
     extern bool motionDetected;
     if (motionDetected) {
-      motionDetected = false;
-      updateOLEDDisplay();  // Update OLED to show clear status
+      // SYNC BOTH DISPLAYS - Safe Status
+      displayNormalStatus();  // LCD - return to normal display
+      updateOLEDDisplay();  // OLED - update to show clear status
+      
+      Serial.println("=== MOTION HAZARD CLEARED ===");
+      Serial.println("LCD: Normal status displayed");
+      Serial.println("OLED: Normal status displayed");
     }
   }
 }
@@ -219,7 +271,20 @@ void fanTempLCD() {
   // Control fan based on readings
   controlFan(t, h);
   
-  // Display readings on both displays for immediate synchronization
-  displayTemperatureHumidity(t, h);  // LCD
+  // Only update LCD display if there are no active alerts
+  // This prevents flickering between alert and normal states
+  if (!isFlameDetected() && !isMotionDetected()) {
+    displayNormalStatus();  // LCD - shows "Smart Shop Guard" + temp/humidity
+  } else {
+    // Debug output to track alert states
+    if (isFlameDetected()) {
+      Serial.println("Fire detected - LCD display locked to fire alert");
+    }
+    if (isMotionDetected()) {
+      Serial.println("Motion detected - LCD display locked to thief alert");
+    }
+  }
+  
+  // Always update OLED (it handles its own alert states)
   displayOLEDTemperatureHumidity(t, h);  // OLED (immediate sync)
 }

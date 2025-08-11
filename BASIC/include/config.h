@@ -33,6 +33,11 @@
 #define OLED_SCL_PIN 9     // SCL pin for OLED (ESP32)
 #define OLED_ADDRESS 0x3C   // I2C address for OLED
 
+// Button Definitions
+#define BUTTON_NEXT 47
+#define BUTTON_PREV 48
+
+
 // Legacy LCD Configuration (commented out - replaced by OLED)
 // #define LCD_ADDRESS 0x27    // I2C address for LCD
 // #define LCD_COLUMNS 16      // LCD columns

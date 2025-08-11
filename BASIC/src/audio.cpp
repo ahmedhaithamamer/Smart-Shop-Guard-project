@@ -1,4 +1,5 @@
 #include "audio.h"
+#include "esp_task_wdt.h"
 
 void initAudio() {
     pinMode(BUZZER_PIN, OUTPUT);
@@ -12,6 +13,7 @@ void playStartupTone() {
     for (int i = 0; i < sizeof(startupNotes) / sizeof(startupNotes[0]); i++) {
         tone(BUZZER_PIN, startupNotes[i], duration);
         delay(duration + 20);
+        esp_task_wdt_reset(); // Reset watchdog during startup tone
         yield(); // Allow other tasks to run
     }
     noTone(BUZZER_PIN);
@@ -24,6 +26,7 @@ void playModeSwitchTone() {
     for (int i = 0; i < sizeof(switchNotes) / sizeof(switchNotes[0]); i++) {
         tone(BUZZER_PIN, switchNotes[i], duration);
         delay(duration + 20);
+        esp_task_wdt_reset(); // Reset watchdog during mode switch tone
         yield(); 
     }
     noTone(BUZZER_PIN);
@@ -37,14 +40,17 @@ void playAlertTone() {
     for (int i = 0; i < 3; i++) { 
         tone(BUZZER_PIN, tone1, duration);
         delay(duration);
+        esp_task_wdt_reset(); // Reset watchdog during alert tone
         yield(); 
         tone(BUZZER_PIN, tone2, duration);
         delay(duration);
+        esp_task_wdt_reset(); // Reset watchdog during alert tone
         yield(); 
     }
 
     tone(BUZZER_PIN, tone1, 250); 
     delay(250);
+    esp_task_wdt_reset(); // Reset watchdog during alert tone
     yield(); 
     noTone(BUZZER_PIN);
 }

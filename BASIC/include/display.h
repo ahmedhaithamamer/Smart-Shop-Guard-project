@@ -8,6 +8,8 @@
 // External variables
 extern LiquidCrystal_I2C lcd;
 extern bool isDay;
+extern int t;  // Temperature
+extern int h;  // Humidity
 
 // Display initialization
 void initDisplay();
@@ -22,6 +24,7 @@ void printToDisplay(int value);
 void displayTemperatureHumidity(int temperature, int humidity);
 void displayWelcomeMessage();
 void displayModeStatus();
+void displayNormalStatus();
 void displayFireAlert();
 void displaySafeStatus();
 void displayThiefAlert();

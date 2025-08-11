@@ -1,4 +1,5 @@
 #include "display.h"
+#include "esp_task_wdt.h"
 
 void initDisplay() {
     lcd.init();
@@ -27,7 +28,7 @@ void displayTemperatureHumidity(int temperature, int humidity) {
     lcd.print(temperature);
     lcd.print("C ");
 
-    lcd.setCursor(11, 1);
+    lcd.setCursor(7, 1);
     lcd.print("H:");
     lcd.print(humidity);
     lcd.print("%");
@@ -38,9 +39,11 @@ void displayWelcomeMessage() {
         lcd.setCursor(4, 0);
         lcd.print("Welcome!");
         delay(STARTUP_DISPLAY_DELAY);
+        esp_task_wdt_reset(); // Reset watchdog during delay
         yield(); // Allow other tasks to run
         lcd.clear();
         delay(200);
+        esp_task_wdt_reset(); // Reset watchdog during delay
         yield(); // Allow other tasks to run
     }
 }
@@ -51,25 +54,41 @@ void displayModeStatus() {
     lcd.print("Mode: ");
     lcd.print(isDay ? "Night" : "Day");
     delay(MODE_DISPLAY_DELAY);
+    esp_task_wdt_reset(); // Reset watchdog during delay
     yield(); // Allow other tasks to run
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Gahabeez Market");
+    lcd.print("Smart Shop Guard");
     delay(MODE_DISPLAY_DELAY);
+    esp_task_wdt_reset(); // Reset watchdog during delay
     yield(); // Allow other tasks to run
 }
 
 void displayFireAlert() {
-    lcd.setCursor(6, 1);
-    lcd.print("Fire!");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("FIRE ALERT!");
+    lcd.setCursor(0, 1);
+    lcd.print("EVACUATE NOW!");
+    Serial.println("LCD: Fire alert displayed");
+}
+
+void displayNormalStatus() {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Smart Shop Guard");
+    displayTemperatureHumidity(t, h);
 }
 
 void displaySafeStatus() {
-    lcd.setCursor(6, 1);
-    lcd.print("SAFE ");
+    displayNormalStatus();
 }
 
 void displayThiefAlert() {
-    lcd.setCursor(5, 1);
-    lcd.print("Thief!");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("THIEF ALERT!");
+    lcd.setCursor(0, 1);
+    lcd.print("Security Breach!");
+    Serial.println("LCD: Thief alert displayed");
 }

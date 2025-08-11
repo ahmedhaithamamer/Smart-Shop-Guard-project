@@ -31,15 +31,8 @@ enum MenuState {
   STATE_SETTINGS = 1
 };
 
-// Display themes
-enum DisplayTheme {
-  THEME_NORMAL = 0,
-  THEME_INVERT = 1
-};
-
-// Configuration structure
+// Configuration structure (simplified - no theme)
 struct OLEDConfig {
-  int theme;
   bool auto_swipe;
 };
 
@@ -55,6 +48,7 @@ extern bool doorOpen;
 
 // OLED Display initialization
 void initOLEDDisplay();
+void initOLEDButtons();
 
 // Main display functions (OLED-specific to avoid LCD conflicts)
 void clearOLEDDisplay();
@@ -70,6 +64,9 @@ void showIntro();
 void handleOLEDButtons();
 void updateOLEDDisplay();
 void showCurrentPage();
+void handleButtons();
+void toggleSettings();
+void executeSetting();
 
 // Individual page functions
 void showStatusPage();
@@ -79,7 +76,6 @@ void showAlertsPage();
 void showSettingsPage();
 
 // Utility functions
-void applyTheme();
 void drawProgressBar(int x, int y, int width, int height, int percentage);
 void animateAlert();
 
