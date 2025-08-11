@@ -196,6 +196,9 @@ void processNightMode() {
       Serial.println("=== FIRE HAZARD CLEARED ===");
       Serial.println("LCD: Safe status displayed");
       Serial.println("OLED: Safe status - resuming normal operation");
+      
+      // IMPORTANT: Reset the fire detected flag to prevent repeated clearing
+      fireDetected = false;
     }
   }
   
@@ -234,6 +237,9 @@ void processDayMode() {
       Serial.println("=== FIRE HAZARD CLEARED ===");
       Serial.println("LCD: Safe status displayed");
       Serial.println("OLED: Safe status - resuming normal operation");
+      
+      // IMPORTANT: Reset the fire detected flag to prevent repeated clearing
+      fireDetected = false;
     }
   }
   
@@ -255,11 +261,14 @@ void processDayMode() {
     if (motionDetected) {
       // SYNC BOTH DISPLAYS - Safe Status
       displayNormalStatus();  // LCD - return to normal display
-      updateOLEDDisplay();  // OLED - update to show clear status
+      displayOLEDMotionCleared();  // OLED - clear motion and resume normal operation
       
       Serial.println("=== MOTION HAZARD CLEARED ===");
       Serial.println("LCD: Normal status displayed");
-      Serial.println("OLED: Normal status displayed");
+      Serial.println("OLED: Motion cleared - resuming normal operation");
+      
+      // IMPORTANT: Reset the motion detected flag to prevent repeated clearing
+      motionDetected = false;
     }
   }
 }

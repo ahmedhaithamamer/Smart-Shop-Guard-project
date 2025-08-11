@@ -184,10 +184,14 @@ void displayOLEDSafeStatus() {
   fireDetected = false;
   alertFlashing = false;
   
-  // Resume normal operation
+  // Resume normal operation - return to status page and resume auto-swipe
+  currentPage = PAGE_STATUS;  // Return to status page
+  lastAutoSwipe = millis();   // Reset auto-swipe timer to resume cycling
+  
+  // Update OLED immediately to show normal status
   updateOLEDDisplay();
   
-  Serial.println("OLED: Safe status - resuming normal operation");
+  Serial.println("OLED: Safe status - resuming normal operation and page cycling");
 }
 
 void displayOLEDThiefAlert() {
@@ -202,6 +206,20 @@ void displayOLEDThiefAlert() {
   updateOLEDDisplay();
   
   Serial.println("OLED: Thief alert displayed - page cycling paused");
+}
+
+void displayOLEDMotionCleared() {
+  motionDetected = false;
+  alertFlashing = false;
+  
+  // Resume normal operation - return to status page and resume auto-swipe
+  currentPage = PAGE_STATUS;  // Return to status page
+  lastAutoSwipe = millis();   // Reset auto-swipe timer to resume cycling
+  
+  // Update OLED immediately to show normal status
+  updateOLEDDisplay();
+  
+  Serial.println("OLED: Motion cleared - resuming normal operation and page cycling");
 }
 
 void updateOLEDDisplay() {

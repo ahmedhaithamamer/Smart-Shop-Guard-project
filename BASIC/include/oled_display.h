@@ -58,6 +58,7 @@ void displayOLEDModeStatus();
 void displayOLEDFireAlert();
 void displayOLEDSafeStatus();
 void displayOLEDThiefAlert();
+void displayOLEDMotionCleared();
 
 // OLED-specific functions
 void showIntro();
