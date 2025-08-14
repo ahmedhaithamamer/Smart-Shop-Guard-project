@@ -17,7 +17,7 @@
 #include <ESP32Servo.h>         
 #include <WiFi.h>
 #include "blynk_instance.h"
-#include "esp_task_wdt.h"
+// #include "esp_task_wdt.h" // Removed - watchdog disabled for stability
 
 // 🔧 Hardware Interface Objects
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);  // 16x2 LCD Display
@@ -72,7 +72,7 @@ static TaskHandle_t hTaskSysMon = nullptr;     // System Monitor Task
 // 🌐 Network Management Task (Core 0)
 // Handles WiFi connectivity, Blynk cloud communication, and sensor data transmission
 void TaskWiFiBlynk(void* pvParameters) {
-  esp_task_wdt_add(NULL);  // Register with watchdog timer
+  // esp_task_wdt_add(NULL);  // Watchdog disabled
   Serial.printf("[CORE %d] TaskWiFiBlynk started\n", xPortGetCoreID());
   SensorData latest{};     // Latest sensor data buffer
   unsigned long lastBlynkSend = 0;           // Last transmission timestamp
@@ -95,7 +95,7 @@ void TaskWiFiBlynk(void* pvParameters) {
       }
     }
     
-    esp_task_wdt_reset();
+    // esp_task_wdt_reset(); // Watchdog disabled
     vTaskDelay(pdMS_TO_TICKS(50));
   }
 }
@@ -103,7 +103,7 @@ void TaskWiFiBlynk(void* pvParameters) {
 // 📺 LCD Display Management Task (Core 1)
 // Manages 16x2 LCD screen updates and status display coordination
 void TaskLCD(void* pvParameters) {
-  esp_task_wdt_add(NULL);  // Register with watchdog timer
+  // esp_task_wdt_add(NULL);  // Watchdog disabled
   Serial.printf("[CORE %d] TaskLCD started\n", xPortGetCoreID());
   static unsigned long lastNormalUpdate = 0;  // Normal status update timestamp
   
@@ -117,7 +117,7 @@ void TaskLCD(void* pvParameters) {
       }
     }
     
-    esp_task_wdt_reset();
+    // esp_task_wdt_reset(); // Watchdog disabled
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
@@ -125,7 +125,7 @@ void TaskLCD(void* pvParameters) {
 // 🖥️ OLED Display Management Task (Core 1)
 // Handles 128x64 OLED screen updates, button navigation, and page management
 void TaskOLED(void* pvParameters) {
-  esp_task_wdt_add(NULL);  // Register with watchdog timer
+  // esp_task_wdt_add(NULL);  // Watchdog disabled
   Serial.printf("[CORE %d] TaskOLED started\n", xPortGetCoreID());
   for(;;) {
     handleOLEDButtons();
@@ -134,7 +134,7 @@ void TaskOLED(void* pvParameters) {
       updateOLEDDisplay();
       xSemaphoreGive(i2cMutex);
     }
-    esp_task_wdt_reset();
+    // esp_task_wdt_reset(); // Watchdog disabled
     vTaskDelay(pdMS_TO_TICKS(200));
   }
 }
@@ -142,7 +142,7 @@ void TaskOLED(void* pvParameters) {
 // 🔍 Sensor Data Collection Task (Core 1)
 // Continuously monitors all sensors with intelligent debouncing and data processing
 void TaskSensorPoll(void* pvParameters) {
-  esp_task_wdt_add(NULL);  // Register with watchdog timer
+  // esp_task_wdt_add(NULL);  // Watchdog disabled
   Serial.printf("[CORE %d] TaskSensorPoll started\n", xPortGetCoreID());
   SensorData msg{};         // Sensor data message buffer
   // 🔥 Fire Detection Stability Tracking
@@ -180,7 +180,7 @@ void TaskSensorPoll(void* pvParameters) {
     msg.tsMs = millis();
     xQueueOverwrite(sensorDataQueue, &msg);
 
-    esp_task_wdt_reset();
+    // esp_task_wdt_reset(); // Watchdog disabled
     vTaskDelay(pdMS_TO_TICKS(250));
   }
 }
@@ -188,7 +188,7 @@ void TaskSensorPoll(void* pvParameters) {
 // ⚡ Actuator Control & Alert Management Task (Core 1)
 // Processes emergency events and controls all output devices (relay, fan, servo)
 void TaskActuators(void* pvParameters) {
-  esp_task_wdt_add(NULL);  // Register with watchdog timer
+  // esp_task_wdt_add(NULL);  // Watchdog disabled
   Serial.printf("[CORE %d] TaskActuators started\n", xPortGetCoreID());
   SensorData latest{};      // Latest sensor data buffer
   Event ev{};               // Event notification buffer
@@ -251,7 +251,7 @@ void TaskActuators(void* pvParameters) {
       controlFan(latest.temperatureC, latest.humidityPct);
       moveServo();
     }
-    esp_task_wdt_reset();
+    // esp_task_wdt_reset(); // Watchdog disabled
     vTaskDelay(pdMS_TO_TICKS(20));
   }
 }
@@ -264,7 +264,7 @@ QueueHandle_t audioQueue = nullptr;
 // 📊 System Health Monitoring & Audio Processing Task (Core 0)
 // Monitors system resources, processes audio events, and provides system diagnostics
 void TaskSystemMonitor(void* pvParameters) {
-  esp_task_wdt_add(NULL);  // Register with watchdog timer
+  // esp_task_wdt_add(NULL);  // Watchdog disabled
   Serial.printf("[CORE %d] TaskSystemMonitor started\n", xPortGetCoreID());
   AudioEvent audioEvent{};
   unsigned long lastHeapReport = 0;
@@ -318,7 +318,7 @@ void TaskSystemMonitor(void* pvParameters) {
       lastTaskReport = millis();
     }
     
-    esp_task_wdt_reset();
+    // esp_task_wdt_reset(); // Watchdog disabled
     vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
@@ -326,9 +326,9 @@ void TaskSystemMonitor(void* pvParameters) {
 // 🚀 System Initialization & Task Creation
 // Sets up hardware, creates FreeRTOS resources, and launches all system tasks
 void setup() {
-  // 🛡️ Watchdog Timer Configuration
-  esp_task_wdt_init(10, true);  // 10 second timeout for system stability
-  // Note: loopTask not added to WDT; individual tasks register themselves
+  // 🛡️ Watchdog Timer Configuration - DISABLED
+  // esp_task_wdt_init(10, true);  // Disabled for better stability
+  // Note: Software watchdog removed, hardware watchdog still provides protection
   
   // ⏱️ Power Stabilization Delay
   vTaskDelay(pdMS_TO_TICKS(1000));  // Allow power supply to stabilize
@@ -404,8 +404,8 @@ void setup() {
 
 // 🔄 Main Loop (Minimal in FreeRTOS Design)
 // In RTOS architecture, most work is done by dedicated tasks
-// This loop maintains watchdog timer and provides system heartbeat
+// This loop provides system heartbeat
 void loop() {
-  esp_task_wdt_reset();  // Reset watchdog timer for stability
+  // esp_task_wdt_reset();  // Watchdog disabled for stability
   vTaskDelay(pdMS_TO_TICKS(1000));  // 1-second system heartbeat
 }
