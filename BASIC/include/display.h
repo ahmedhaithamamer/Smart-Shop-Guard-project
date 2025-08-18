@@ -26,6 +26,8 @@ void printToDisplay(int value);
 // Specific display functions
 void displayTemperatureHumidity(int temperature, int humidity);
 void displayWelcomeMessage();
+void displayProjectInfoSequence();
+void displayLCDAnimations();
 void displayModeStatus();
 void displayNormalStatus();
 void displayFireAlert();

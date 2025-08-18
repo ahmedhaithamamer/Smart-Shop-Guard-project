@@ -23,7 +23,6 @@ extern DHT dht;
 extern int t;
 extern int h;
 extern long duration;
-extern int distance;
 
 extern volatile bool pirFlag; // set from ISR
 

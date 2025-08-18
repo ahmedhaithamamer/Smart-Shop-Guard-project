@@ -1,5 +1,4 @@
 #include "system.h"
-#include "esp_task_wdt.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -52,7 +51,6 @@ bool initWiFi() {
     while (WiFi.status() != WL_CONNECTED && millis() - wifiConnectStart < 5000) {
         vTaskDelay(pdMS_TO_TICKS(500));        // 500ms connection check interval
         Serial.print(".");                      // Visual connection progress indicator
-        esp_task_wdt_reset();                   // Reset watchdog during connection
     }
     
     // ✅ Connection Success Handling

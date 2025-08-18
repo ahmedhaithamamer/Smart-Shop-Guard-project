@@ -1,7 +1,6 @@
 #include "oled_display.h"
 #include "sensors.h"
 #include "system.h"
-#include "esp_task_wdt.h"
 
 // OLED Display object - 1.3" 128x64 display
 SH1106Wire display(0x3C, OLED_SDA_PIN, OLED_SCL_PIN);
@@ -67,11 +66,9 @@ void showIntro() {
     display.drawString(15, 15, line1.substring(0, i));
     display.display();
     vTaskDelay(pdMS_TO_TICKS(100)); // Reduced from 150ms
-    esp_task_wdt_reset(); // Reset watchdog during animation
   }
   
   vTaskDelay(pdMS_TO_TICKS(200)); // Reduced from 300ms
-  esp_task_wdt_reset();
   
   // Show "Guard" letter by letter with shield icon
   String line2 = "Guard";
@@ -87,18 +84,15 @@ void showIntro() {
     
     display.display();
     vTaskDelay(pdMS_TO_TICKS(100)); // Reduced from 150ms
-    esp_task_wdt_reset(); // Reset watchdog during animation
   }
   
   vTaskDelay(pdMS_TO_TICKS(300)); // Reduced from 500ms
-  esp_task_wdt_reset();
   
   // Animation 2: Blinking effect with shield icon (reduced iterations)
   for (int i = 0; i < 2; i++) { // Reduced from 3 to 2 iterations
     display.clear();
     display.display();
     vTaskDelay(pdMS_TO_TICKS(150)); // Reduced from 200ms
-    esp_task_wdt_reset();
     
     display.clear();
     display.drawString(15, 15, "Smart Shop");
@@ -106,7 +100,6 @@ void showIntro() {
     display.drawXbm(80, 32, 16, 16, shield_icon);
     display.display();
     vTaskDelay(pdMS_TO_TICKS(200)); // Reduced from 300ms
-    esp_task_wdt_reset();
   }
   
   // Animation 3: Border animation with shield icon (simplified)
@@ -127,7 +120,6 @@ void showIntro() {
     
     display.display();
     vTaskDelay(pdMS_TO_TICKS(80)); // Reduced from 100ms
-    esp_task_wdt_reset(); // Reset watchdog during animation
   }
   
   // Final display with shield icon
@@ -137,7 +129,6 @@ void showIntro() {
   display.drawXbm(80, 32, 16, 16, shield_icon);
   display.display();
   vTaskDelay(pdMS_TO_TICKS(400)); // Reduced from 800ms
-  esp_task_wdt_reset();
 }
 
 void clearOLEDDisplay() {
@@ -162,7 +153,6 @@ void displayOLEDModeStatus() {
   display.drawString(15, 35, isDay ? "Night" : "Day");
   display.display();
   vTaskDelay(pdMS_TO_TICKS(1000));  // Reduced delay for better sync
-  esp_task_wdt_reset(); // Reset watchdog after delay
   updateOLEDDisplay();  // Return to normal display after mode status
 }
 
@@ -276,13 +266,10 @@ void handleButtons() {
       // Visual feedback - flash the display
       display.invertDisplay();
       vTaskDelay(pdMS_TO_TICKS(100));
-      esp_task_wdt_reset();
       display.normalDisplay();
       vTaskDelay(pdMS_TO_TICKS(100));
-      esp_task_wdt_reset();
       display.invertDisplay();
       vTaskDelay(pdMS_TO_TICKS(100));
-      esp_task_wdt_reset();
       display.normalDisplay();
       // Display restored to normal mode
     }
@@ -452,7 +439,7 @@ void showSystemPage() {
   
   // System information with dynamic WiFi status
   display.drawString(0, 20, getWiFiStatus());
-  display.drawString(0, 30, "Mode: " + String(isDay ? "Day" : "Night"));
+  display.drawString(0, 30, "Mode: " + String(isDay ? "Night" : "Day"));
   display.drawString(0, 40, "Uptime: " + String(millis() / 1000) + "s");
   display.drawString(0, 50, "Memory: " + String(ESP.getFreeHeap()/1000) + "KB");
 }

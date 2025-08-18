@@ -1,6 +1,5 @@
 #include "sensors.h"
 #include "blynk_instance.h"
-#include "esp_task_wdt.h"
 #include "system.h"  // For Event struct and EventType
 
 // 🔍 PIR Motion Detection State Tracking
@@ -66,7 +65,7 @@ void readMotion() {
             
             if (eventQueue) {
                 // 🌙 Night Mode Motion Detection (Thief Alert)
-                if (currentPirState && !isDay) {
+                if (currentPirState && isDay) {
                     Event e{EVENT_MOTION_DETECTED, (uint32_t)millis()};
                     xQueueSend(eventQueue, &e, 0);  // Non-blocking event queue
                     Serial.println("🚨 Motion detected at NIGHT - Thief alert triggered");
@@ -106,18 +105,18 @@ void triggerUltrasonicSensor() {
     // 📡 Echo Detection with Timeout Protection
     duration = pulseIn(ECHO_PIN, HIGH, 30000);  // 30ms timeout (~5m max range)
     if (duration == 0) {
-        distance = 999;  // Indicate no echo received (out of range)
-    } else {
-        distance = duration * 0.034 / 2;  // Convert to cm (speed of sound calculation)
+        // Store result in global duration variable, distance calculation done in main.cpp
+        duration = 0;  // Indicate no echo received (out of range)
     }
-
-    // 📊 Distance Output Display
-    Serial.print("📏 Distance: ");
-    Serial.print(distance);
-    Serial.println(" cm");
+    // duration now contains the pulse time, distance calculation handled in main.cpp
 }
 
 // 📏 Distance Data Access
 int getDistance() {
-    return distance;  // Return current distance measurement in centimeters
+    // Calculate distance from duration (speed of sound calculation)
+    if (duration == 0) {
+        return 999;  // Out of range
+    } else {
+        return duration * 0.034 / 2;  // Convert to cm
+    }
 }

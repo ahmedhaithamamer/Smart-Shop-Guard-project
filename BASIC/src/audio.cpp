@@ -1,5 +1,4 @@
 #include "audio.h"
-#include "esp_task_wdt.h"
 #include <Arduino.h>
 
 // Use LEDC for buzzer on ESP32
@@ -45,7 +44,6 @@ void playStartupTone() {
         Serial.printf("Playing note %d Hz\n", startupNotes[i]);
         writeTone(startupNotes[i]);
         vTaskDelay(pdMS_TO_TICKS(duration + 20));
-        esp_task_wdt_reset();
     }
     writeTone(0);
     Serial.println("Startup tone complete");
@@ -57,7 +55,6 @@ void playModeSwitchTone() {
     for (unsigned i = 0; i < sizeof(switchNotes) / sizeof(switchNotes[0]); i++) {
         writeTone(switchNotes[i]);
         vTaskDelay(pdMS_TO_TICKS(duration + 20));
-        esp_task_wdt_reset();
     }
     writeTone(0);
 }
@@ -71,14 +68,11 @@ void playAlertTone() {
         Serial.printf("Alert tone cycle %d: %d Hz\n", i+1, tone1);
         writeTone(tone1);
         vTaskDelay(pdMS_TO_TICKS(duration));
-        esp_task_wdt_reset();
         writeTone(tone2);
         vTaskDelay(pdMS_TO_TICKS(duration));
-        esp_task_wdt_reset();
     }
     writeTone(tone1);
     vTaskDelay(pdMS_TO_TICKS(250));
-    esp_task_wdt_reset();
     writeTone(0);
     Serial.println("Alert tone complete");
 }

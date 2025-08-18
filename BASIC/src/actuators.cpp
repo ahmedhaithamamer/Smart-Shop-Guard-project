@@ -1,4 +1,6 @@
 #include "actuators.h"
+#include "sensors.h"
+#include "system.h"
 
 void initActuators() {
     // Set pin modes for actuators
@@ -36,19 +38,21 @@ void initServo() {
 }
 
 void moveServo() {
-    extern int distance;  // From sensors module
-    
-    if (distance <= DISTANCE_THRESHOLD) {
-        degree = 180;
-        lastTime = millis();
-    }
+    // Get distance from sensor data queue
+    SensorData latest{};
+    if (xQueuePeek(sensorDataQueue, &latest, 0) == pdTRUE) {
+        if (latest.distanceCm <= DISTANCE_THRESHOLD) {
+            degree = 180;
+            lastTime = millis();
+        }
 
-    if (millis() - lastTime >= SERVO_DELAY) {
-        degree = 0;
-    }
+        if (millis() - lastTime >= SERVO_DELAY) {
+            degree = 0;
+        }
 
-    myServo.write(degree);
-    // Non-blocking: removed delay(15)
+        myServo.write(degree);
+        // Non-blocking: removed delay(15)
+    }
 }
 
 void setServoPosition(int position) {

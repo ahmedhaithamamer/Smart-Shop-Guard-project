@@ -21,6 +21,9 @@
 #define SERVO_PIN 7         // Servo motor pin
 #define TRIG_PIN 42         // Ultrasonic sensor trigger pin
 #define ECHO_PIN 41         // Ultrasonic sensor echo pin
+// new
+#define LED_STRIP 20
+#define LOUD_BUZZER 19
 
 // DHT Sensor Configuration
 #define DHTTYPE DHT11       // DHT sensor type
