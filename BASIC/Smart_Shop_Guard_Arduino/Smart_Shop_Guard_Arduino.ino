@@ -16,6 +16,7 @@
 #include <SH1106Wire.h>
 #include <DHT.h>
 #include <ESP32Servo.h>
+#include <Adafruit_NeoPixel.h>
 
 // ========== ARDUINO COMPATIBILITY ==========
 // Using native Arduino functions - no compatibility macros needed
@@ -37,6 +38,11 @@
 #define SERVO_PIN 7         // Servo motor pin
 #define TRIG_PIN 42         // Ultrasonic sensor trigger pin
 #define ECHO_PIN 41         // Ultrasonic sensor echo pin
+
+// LED Strip Configuration
+#define LED_PIN 20          // GPIO pin for NeoPixel strip (ESP32-S3 compatible)
+#define NUM_PIXELS 31       // Number of NeoPixels in the strip
+#define LED_BRIGHTNESS 100  // Global brightness (0-255)
 
 // DHT Sensor Configuration
 #define DHTTYPE DHT11       // DHT sensor type
@@ -68,6 +74,21 @@
 #define STARTUP_DISPLAY_DELAY 400  // Startup message display delay
 #define MODE_DISPLAY_DELAY 1000    // Mode status display delay
 
+// LED Effect Timing
+#define LED_BOOT_DELAY 100      // Boot animation speed
+#define LED_EFFECT_DELAY 50     // General effect speed
+#define LED_STABLE_DELAY 2000   // Stable mode duration
+
+// LED Color Definitions (RGB values)
+#define LED_COLOR_OFF      0, 0, 0
+#define LED_COLOR_BLUE     0, 100, 255    // Security/Normal
+#define LED_COLOR_GREEN    0, 255, 100    // Safe/OK status
+#define LED_COLOR_ORANGE   255, 165, 0    // Warning/Caution
+#define LED_COLOR_RED      255, 0, 0      // Alert/Danger
+#define LED_COLOR_PURPLE   128, 0, 128    // System/Boot
+#define LED_COLOR_WHITE    255, 255, 255  // Bright/Active
+#define LED_COLOR_CYAN     0, 255, 255    // Info/Data
+
 // Blynk Virtual Pins
 #define VPIN_TEMPERATURE V0
 #define VPIN_HUMIDITY V1
@@ -82,6 +103,7 @@ LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);  // 16x2 LCD Display
 DHT dht(DHTPIN, DHTTYPE);                                    // Temperature & Humidity Sensor
 Servo myServo;                                               // Security Door Control
 SH1106Wire display(OLED_ADDRESS, OLED_SDA_PIN, OLED_SCL_PIN); // OLED Display object - 1.3" 128x64 display
+Adafruit_NeoPixel strip(NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800); // NeoPixel LED Strip
 
 // 🌐 Network Configuration
 char ssid[] = WIFI_SSID;      // WiFi Network Name
@@ -151,6 +173,21 @@ const unsigned long autoSwipeDelay = 15000;
 
 // Audio/Buzzer
 static bool buzzerInitialized = false;
+
+// LED System Variables
+enum LEDMode {
+  LED_BOOT_MODE,
+  LED_SECURE_MODE,
+  LED_ALERT_MODE,
+  LED_SCAN_MODE,
+  LED_FIRE_MODE,
+  LED_MOTION_MODE,
+  LED_OFF_MODE
+};
+
+LEDMode currentLEDMode = LED_BOOT_MODE;
+unsigned long lastLEDUpdate = 0;
+unsigned long lastLEDModeChange = 0;
 
 // ========== DATA STRUCTURES ==========
 // Shared sensor readings payload
@@ -486,7 +523,7 @@ void playModeSwitchTone() {
     int duration = 120;
     for (unsigned i = 0; i < sizeof(switchNotes) / sizeof(switchNotes[0]); i++) {
         writeTone(switchNotes[i]);
-        vTaskDelay(pdMS_TO_TICKS(duration + 20));
+        delay(duration + 20);
     }
     noTone(BUZZER_PIN); // Ensure silent end
 }
@@ -499,9 +536,9 @@ void playAlertTone() {
     for (int i = 0; i < 3; i++) {
         Serial.printf("Alert tone cycle %d: %d Hz\n", i+1, tone1);
         writeTone(tone1);
-        vTaskDelay(pdMS_TO_TICKS(duration));
+        delay(duration);
         writeTone(tone2);
-        vTaskDelay(pdMS_TO_TICKS(duration));
+        delay(duration);
     }
     noTone(BUZZER_PIN); // Ensure silent end
     Serial.println("Alert tone complete");
@@ -510,13 +547,272 @@ void playAlertTone() {
 void playTone(int frequency, int duration) {
     writeTone(frequency);
     if (duration > 0) {
-        vTaskDelay(pdMS_TO_TICKS(duration));
+        delay(duration);
         noTone(BUZZER_PIN); // Ensure silent end
     }
 }
 
 void stopTone() {
     noTone(BUZZER_PIN);
+}
+
+// ========== LED EFFECTS FUNCTIONS ==========
+void initLEDStrip() {
+    Serial.println("🌈 Initializing NeoPixel LED strip...");
+    strip.begin();
+    strip.setBrightness(LED_BRIGHTNESS);
+    strip.show(); // Initialize all pixels to 'off'
+    Serial.printf("✅ LED strip initialized: %d pixels on pin %d\n", NUM_PIXELS, LED_PIN);
+}
+
+// 🚀 Boot Sequence - Smart Shop Guard startup animation
+void ledBootSequence() {
+    Serial.println("🚀 LED Boot Sequence Starting...");
+    
+    // Phase 1: Purple wave - System initialization
+    for(int wave = 0; wave < 2; wave++) {
+        for(int i = 0; i < NUM_PIXELS; i++) {
+            strip.clear();
+            // Create a moving wave of purple
+            for(int j = 0; j < 5; j++) {
+                int pos = (i + j) % NUM_PIXELS;
+                int brightness = 255 - (j * 50);
+                strip.setPixelColor(pos, brightness/2, 0, brightness);
+            }
+            strip.show();
+            delay(LED_BOOT_DELAY);
+        }
+    }
+    
+    // Phase 2: Blue pulse - Security systems online
+    for(int pulse = 0; pulse < 3; pulse++) {
+        for(int brightness = 0; brightness <= 200; brightness += 20) {
+            for(int i = 0; i < NUM_PIXELS; i++) {
+                strip.setPixelColor(i, 0, brightness/3, brightness);
+            }
+            strip.show();
+            delay(30);
+        }
+        for(int brightness = 200; brightness >= 0; brightness -= 20) {
+            for(int i = 0; i < NUM_PIXELS; i++) {
+                strip.setPixelColor(i, 0, brightness/3, brightness);
+            }
+            strip.show();
+            delay(30);
+        }
+    }
+    
+    // Phase 3: Green confirmation - All systems ready
+    for(int i = 0; i < NUM_PIXELS; i++) {
+        strip.setPixelColor(i, LED_COLOR_GREEN);
+        strip.show();
+        delay(LED_BOOT_DELAY/2);
+    }
+    delay(1000);
+    
+    // Fade to stable blue
+    ledFadeToColor(LED_COLOR_BLUE, 30);
+    currentLEDMode = LED_SECURE_MODE;
+}
+
+// 🛡️ Secure Mode - Stable operation with gentle breathing
+void ledSecureMode() {
+    static unsigned long lastBreath = 0;
+    static int breathDirection = 1;
+    static int breathLevel = 100;
+    
+    if (millis() - lastBreath > 40) {
+        breathLevel += breathDirection * 2;
+        
+        if (breathLevel >= 180) {
+            breathDirection = -1;
+        } else if (breathLevel <= 60) {
+            breathDirection = 1;
+        }
+        
+        // Apply breathing effect to all pixels
+        for(int i = 0; i < NUM_PIXELS; i++) {
+            strip.setPixelColor(i, 0, breathLevel/4, breathLevel);
+        }
+        strip.show();
+        lastBreath = millis();
+    }
+}
+
+// 🚨 Fire Alert Mode - Rapid red flashing with siren pattern
+void ledFireAlertMode() {
+    static unsigned long lastAlert = 0;
+    static bool alertState = false;
+    static int alertPhase = 0;
+    
+    if (millis() - lastAlert > 150) {
+        alertState = !alertState;
+        alertPhase = (alertPhase + 1) % 4;
+        
+        if (alertState) {
+            // Create siren-like sweeping effect
+            strip.clear();
+            for(int i = 0; i < NUM_PIXELS/2; i++) {
+                int pos1 = (alertPhase * NUM_PIXELS/4 + i) % NUM_PIXELS;
+                int pos2 = (alertPhase * NUM_PIXELS/4 - i + NUM_PIXELS) % NUM_PIXELS;
+                strip.setPixelColor(pos1, LED_COLOR_RED);
+                strip.setPixelColor(pos2, LED_COLOR_RED);
+            }
+        } else {
+            // Dim red glow
+            for(int i = 0; i < NUM_PIXELS; i++) {
+                strip.setPixelColor(i, 50, 0, 0);
+            }
+        }
+        
+        strip.show();
+        lastAlert = millis();
+    }
+}
+
+// 🚨 Motion Alert Mode - Orange pulsing warning
+void ledMotionAlertMode() {
+    static unsigned long lastMotion = 0;
+    static bool motionState = false;
+    
+    if (millis() - lastMotion > 300) {
+        motionState = !motionState;
+        
+        if (motionState) {
+            // Bright orange flash
+            for(int i = 0; i < NUM_PIXELS; i++) {
+                strip.setPixelColor(i, LED_COLOR_ORANGE);
+            }
+        } else {
+            // Dim orange glow
+            for(int i = 0; i < NUM_PIXELS; i++) {
+                strip.setPixelColor(i, 100, 60, 0);
+            }
+        }
+        
+        strip.show();
+        lastMotion = millis();
+    }
+}
+
+// 🔍 Scan Mode - Rotating scanner like security camera
+void ledScanMode() {
+    static unsigned long lastScan = 0;
+    static int scanPos = 0;
+    static int scanDirection = 1;
+    
+    if (millis() - lastScan > LED_EFFECT_DELAY) {
+        strip.clear();
+        
+        // Create scanning beam
+        for(int i = 0; i < 7; i++) {
+            int pos = (scanPos + i) % NUM_PIXELS;
+            int intensity = 255 - (i * 35);
+            strip.setPixelColor(pos, 0, intensity, intensity);
+        }
+        
+        // Add trailing dots
+        for(int i = 8; i < 12; i++) {
+            int pos = (scanPos + i) % NUM_PIXELS;
+            strip.setPixelColor(pos, 0, 30, 100);
+        }
+        
+        scanPos += scanDirection;
+        if (scanPos >= NUM_PIXELS || scanPos < 0) {
+            scanDirection *= -1;
+            scanPos += scanDirection;
+        }
+        
+        strip.show();
+        lastScan = millis();
+    }
+}
+
+// 🎨 Utility function to fade all pixels to a specific color
+void ledFadeToColor(uint8_t r, uint8_t g, uint8_t b, int steps) {
+    for(int step = 0; step < steps; step++) {
+        for(int i = 0; i < NUM_PIXELS; i++) {
+            uint32_t currentColor = strip.getPixelColor(i);
+            uint8_t currentR = (currentColor >> 16) & 0xFF;
+            uint8_t currentG = (currentColor >> 8) & 0xFF;
+            uint8_t currentB = currentColor & 0xFF;
+            
+            uint8_t newR = currentR + ((r - currentR) * step / steps);
+            uint8_t newG = currentG + ((g - currentG) * step / steps);
+            uint8_t newB = currentB + ((b - currentB) * step / steps);
+            
+            strip.setPixelColor(i, newR, newG, newB);
+        }
+        strip.show();
+        delay(20);
+    }
+}
+
+// 🔄 Clear all pixels
+void ledClearAll() {
+    strip.clear();
+    strip.show();
+}
+
+// 💡 Set all pixels to the same color
+void ledSetAllColor(uint8_t r, uint8_t g, uint8_t b) {
+    for(int i = 0; i < NUM_PIXELS; i++) {
+        strip.setPixelColor(i, r, g, b);
+    }
+    strip.show();
+}
+
+// 🎯 Update LED effects based on system state
+void updateLEDEffects() {
+    // Determine LED mode based on system state
+    LEDMode targetMode = LED_SECURE_MODE; // Default
+    
+    if (fireDetected && fireAlertActive) {
+        targetMode = LED_FIRE_MODE;
+    } else if (motionDetected && motionAlertActive) {
+        targetMode = LED_MOTION_MODE;
+    } else if (sensorDataReady && getDistance() <= DISTANCE_THRESHOLD) {
+        targetMode = LED_SCAN_MODE; // Door activity
+    } else {
+        targetMode = LED_SECURE_MODE; // Normal operation
+    }
+    
+    // Change mode if needed
+    if (currentLEDMode != targetMode) {
+        currentLEDMode = targetMode;
+        lastLEDModeChange = millis();
+        
+        // Log mode change
+        switch(currentLEDMode) {
+            case LED_SECURE_MODE: Serial.println("🌈 LED Mode: SECURE"); break;
+            case LED_FIRE_MODE: Serial.println("🌈 LED Mode: FIRE ALERT"); break;
+            case LED_MOTION_MODE: Serial.println("🌈 LED Mode: MOTION ALERT"); break;
+            case LED_SCAN_MODE: Serial.println("🌈 LED Mode: SCANNING"); break;
+            default: break;
+        }
+    }
+    
+    // Execute current mode effects
+    switch(currentLEDMode) {
+        case LED_BOOT_MODE:
+            // Boot sequence is handled separately
+            break;
+        case LED_SECURE_MODE:
+            ledSecureMode();
+            break;
+        case LED_FIRE_MODE:
+            ledFireAlertMode();
+            break;
+        case LED_MOTION_MODE:
+            ledMotionAlertMode();
+            break;
+        case LED_SCAN_MODE:
+            ledScanMode();
+            break;
+        case LED_OFF_MODE:
+            ledClearAll();
+            break;
+    }
 }
 
 // ========== LCD DISPLAY FUNCTIONS ==========
@@ -557,10 +853,10 @@ void displayWelcomeMessage() {
     for (int i = 0; i < 3; i++) {
         lcd.setCursor(4, 0);
         lcd.print("Welcome!");
-        vTaskDelay(pdMS_TO_TICKS(STARTUP_DISPLAY_DELAY));
+        delay(STARTUP_DISPLAY_DELAY);
         yield();
         lcd.clear();
-        vTaskDelay(pdMS_TO_TICKS(200));
+        delay(200);
         yield();
     }
 }
@@ -570,12 +866,12 @@ void displayModeStatus() {
     lcd.setCursor(0, 0);
     lcd.print("Mode: ");
     lcd.print(isDay ? "Day" : "Night");  // Fixed mode display logic
-    vTaskDelay(pdMS_TO_TICKS(MODE_DISPLAY_DELAY));
+    delay(MODE_DISPLAY_DELAY);
     yield();
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Smart Shop Guard");
-    vTaskDelay(pdMS_TO_TICKS(MODE_DISPLAY_DELAY));
+    delay(MODE_DISPLAY_DELAY);
     yield();
 }
 
@@ -683,7 +979,7 @@ void initOLEDDisplay() {
     // Initialize button pins
     pinMode(BUTTON_NEXT, INPUT_PULLUP);
     pinMode(BUTTON_PREV, INPUT_PULLUP);
-    vTaskDelay(pdMS_TO_TICKS(100));
+    delay(100);
     
     Serial.println("OLED buttons initialized - NEXT: " + String(BUTTON_NEXT) + ", PREV: " + String(BUTTON_NEXT) + ", PREV: " + String(BUTTON_PREV));
     
@@ -700,10 +996,10 @@ void showIntro() {
         display.clear();
         display.drawString(15, 15, line1.substring(0, i));
         display.display();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        delay(100);
     }
     
-    vTaskDelay(pdMS_TO_TICKS(200));
+    delay(200);
     
     String line2 = "Guard";
     for (int i = 0; i <= line2.length(); i++) {
@@ -711,28 +1007,28 @@ void showIntro() {
         display.drawString(15, 15, line1);
         display.drawString(35, 30, line2.substring(0, i));
         display.display();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        delay(100);
     }
     
-    vTaskDelay(pdMS_TO_TICKS(300));
+    delay(300);
     
     for (int i = 0; i < 2; i++) {
         display.clear();
         display.display();
-        vTaskDelay(pdMS_TO_TICKS(150));
+        delay(150);
         
         display.clear();
         display.drawString(15, 15, "Smart Shop");
         display.drawString(35, 30, "Guard");
         display.display();
-        vTaskDelay(pdMS_TO_TICKS(200));
+        delay(200);
     }
     
     display.clear();
     display.drawString(15, 15, "Smart Shop");
     display.drawString(35, 30, "Guard");
     display.display();
-    vTaskDelay(pdMS_TO_TICKS(400));
+    delay(400);
 }
 
 void clearOLEDDisplay() {
@@ -749,7 +1045,7 @@ void displayOLEDModeStatus() {
     display.drawString(15, 15, "Mode: ");
     display.drawString(15, 35, isDay ? "Day" : "Night");  // Fixed mode display logic
     display.display();
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    delay(1000);
     updateOLEDDisplay();
 }
 
@@ -1006,11 +1302,11 @@ void handleOLEDButtons() {
             Serial.println("Auto-swipe toggled: " + String(oledConfig.auto_swipe ? "ON" : "OFF"));
             
             display.invertDisplay();
-            vTaskDelay(pdMS_TO_TICKS(100));
+            delay(100);
             display.normalDisplay();
-            vTaskDelay(pdMS_TO_TICKS(100));
+            delay(100);
             display.invertDisplay();
-            vTaskDelay(pdMS_TO_TICKS(100));
+            delay(100);
             display.normalDisplay();
         }
         return;
@@ -1095,14 +1391,14 @@ bool initWiFi() {
     
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
-    vTaskDelay(pdMS_TO_TICKS(100));
+    delay(100);
     WiFi.begin(ssid, pass);
     
     unsigned long wifiConnectStart = millis();
     Serial.print("🔄 Connecting to WiFi");
     
     while (WiFi.status() != WL_CONNECTED && millis() - wifiConnectStart < 5000) {
-        vTaskDelay(pdMS_TO_TICKS(500));
+        delay(500);
         Serial.print(".");
     }
     
@@ -1134,7 +1430,7 @@ void handleWiFiReconnection() {
         
         Serial.println("🔄 Background: Attempting WiFi reconnection...");
         WiFi.disconnect();
-        vTaskDelay(pdMS_TO_TICKS(50));
+        delay(50);
         WiFi.begin(ssid, pass);
         wifiReconnecting = false;
         
@@ -1361,9 +1657,17 @@ void setup() {
     initActuators();
     initAudio();
     
+    // LED system initialization
+    Serial.println("🌈 Initializing LED effects system...");
+    initLEDStrip();
+    
     // Play welcoming sound after audio initialization
     Serial.println("🔊 Playing welcoming sound...");
     playWelcomingSound();
+    
+    // LED boot sequence
+    Serial.println("🌈 Starting LED boot sequence...");
+    ledBootSequence();
     
     // Network & cloud services setup
     Serial.println("🌐 Attempting WiFi connection (5 second timeout)...");
@@ -1400,6 +1704,9 @@ void loop() {
     handleSensors();
     handleActuators();
     handleSystemMonitor();
+    
+    // Update LED effects based on current system state
+    updateLEDEffects();
     
     // Small delay to prevent overwhelming the system
     delay(10);
