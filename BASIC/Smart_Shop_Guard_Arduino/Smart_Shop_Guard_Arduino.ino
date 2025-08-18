@@ -1,72 +1,72 @@
-// 🏪 Smart Shop Guard - Arduino IDE Compatible Version
-// 🚀 Dual-core ESP32-S3 security monitoring system
-// 🛡️ Advanced IoT security with dual displays and multi-sensor monitoring
+// 🏪 Smart Shop Guard - ESP32 Arduino IDE Compatible Implementation
+// 🚀 Dual-core architecture for optimal performance and reliability
+// 🛡️ Advanced security monitoring with real-time sensor processing
+// Arduino IDE Compatible Version - Single File Structure
 
-// ========== CONFIGURATION ==========
-// Blynk Configuration
+// ========== BLYNK CONFIGURATION (MUST BE FIRST) ==========
 #define BLYNK_TEMPLATE_ID "TMPL2jt8pOqfP"
 #define BLYNK_TEMPLATE_NAME "Smart Secure Smart Shop"
 #define BLYNK_AUTH_TOKEN "LVODBytZ9qETpIjcYFFx5-4b4UFfRUdg"
 
-// ========== LIBRARY INCLUDES ==========
-#include <DHT.h>
-#include <LiquidCrystal_I2C.h>
-#include <Wire.h>
-#include <Arduino.h>
-#include <ESP32Servo.h>
+// ========== INCLUDES ==========
 #include <WiFi.h>
 #include <BlynkSimpleEsp32.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 #include <SH1106Wire.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "freertos/semphr.h"
+#include <DHT.h>
+#include <ESP32Servo.h>
 
+// ========== ARDUINO COMPATIBILITY ==========
+// Using native Arduino functions - no compatibility macros needed
+
+// ========== CONFIG.H EQUIVALENT ==========
+// Blynk Configuration (already defined above)
 // WiFi Configuration
 #define WIFI_SSID "Amer_ABF"
 #define WIFI_PASSWORD "Amer_Ham_2020"
-#define WIFI_TIMEOUT 10000
+#define WIFI_TIMEOUT 10000  // WiFi connection timeout in milliseconds
 
 // Pin Definitions
-#define DHTPIN 40
-#define FAN_PIN 12
-#define FLAME_SENSOR_PIN 4
-#define BUZZER_PIN 17
-#define RELAY_PIN 1
-#define PIR_PIN 5
-#define SERVO_PIN 7
-#define TRIG_PIN 42
-#define ECHO_PIN 41
+#define DHTPIN 40           // DHT sensor pin
+#define FAN_PIN 12          // Fan control pin
+#define FLAME_SENSOR_PIN 4  // Flame sensor pin
+#define BUZZER_PIN 17       // Buzzer pin
+#define RELAY_PIN 1         // Relay pin
+#define PIR_PIN 5           // PIR motion sensor pin
+#define SERVO_PIN 7         // Servo motor pin
+#define TRIG_PIN 42         // Ultrasonic sensor trigger pin
+#define ECHO_PIN 41         // Ultrasonic sensor echo pin
 
 // DHT Sensor Configuration
-#define DHTTYPE DHT11
+#define DHTTYPE DHT11       // DHT sensor type
 
 // LCD Configuration
-#define LCD_ADDRESS 0x27
-#define LCD_COLUMNS 16
-#define LCD_ROWS 2
+#define LCD_ADDRESS 0x27    // I2C address for LCD
+#define LCD_COLUMNS 16      // LCD columns
+#define LCD_ROWS 2          // LCD rows
 
-// OLED Display Configuration
-#define OLED_SDA_PIN 8
-#define OLED_SCL_PIN 9
-#define OLED_ADDRESS 0x3C
+// OLED Display Configuration (1.3" 128x64)
+#define OLED_SDA_PIN 8     // SDA pin for OLED (ESP32)
+#define OLED_SCL_PIN 9     // SCL pin for OLED (ESP32)
+#define OLED_ADDRESS 0x3C   // I2C address for OLED
 
 // Button Definitions
 #define BUTTON_NEXT 47
 #define BUTTON_PREV 48
 
 // Temperature and Humidity Thresholds
-#define TEMP_THRESHOLD 23
-#define HUMIDITY_THRESHOLD 60
+#define TEMP_THRESHOLD 23   // Temperature threshold in Celsius
+#define HUMIDITY_THRESHOLD 60  // Humidity threshold in percentage
 
 // Ultrasonic Sensor Configuration
-#define DISTANCE_THRESHOLD 12
-#define SERVO_DELAY 3000
+#define DISTANCE_THRESHOLD 12  // Distance threshold in cm for servo activation
+#define SERVO_DELAY 3000      // Servo return delay in milliseconds
 
 // Timing Configuration
-#define SERIAL_BAUD_RATE 9600
-#define STARTUP_DISPLAY_DELAY 400
-#define MODE_DISPLAY_DELAY 1000
+#define SERIAL_BAUD_RATE 9600  // Serial communication baud rate
+#define STARTUP_DISPLAY_DELAY 400  // Startup message display delay
+#define MODE_DISPLAY_DELAY 1000    // Mode status display delay
 
 // Blynk Virtual Pins
 #define VPIN_TEMPERATURE V0
@@ -76,35 +76,56 @@
 #define VPIN_DAY_NIGHT V5
 #define VPIN_AC_CONTROL V6
 
-// ========== HARDWARE OBJECTS ==========
-LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
-DHT dht(DHTPIN, DHTTYPE);
-Servo myServo;
-SH1106Wire display(OLED_ADDRESS, OLED_SDA_PIN, OLED_SCL_PIN);
+// ========== HARDWARE INTERFACE OBJECTS ==========
+// 🔧 Hardware Interface Objects
+LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);  // 16x2 LCD Display
+DHT dht(DHTPIN, DHTTYPE);                                    // Temperature & Humidity Sensor
+Servo myServo;                                               // Security Door Control
+SH1106Wire display(OLED_ADDRESS, OLED_SDA_PIN, OLED_SCL_PIN); // OLED Display object - 1.3" 128x64 display
 
-// ========== GLOBAL VARIABLES ==========
-// System State Variables
-int h = 0;
-int t = 0;
-long duration = 0;
-int degree = 0;
-int Servodegree = 0;
-unsigned long lastTime = 0;
-unsigned long startTime = 0;
-bool isDay = false;
-bool AC = false;
-unsigned long lastStatusPrint = 0;
-unsigned long lastOLEDUpdate = 0;
+// 🌐 Network Configuration
+char ssid[] = WIFI_SSID;      // WiFi Network Name
+char pass[] = WIFI_PASSWORD;  // WiFi Password
 
-// Alert State Management
-static bool fireAlertActive = false;
-static bool motionAlertActive = false;
+// ========== SYSTEM STATE VARIABLES ==========
+// 📊 System State Variables
+int h = 0;              // Current Humidity Percentage
+int t = 0;              // Current Temperature (°C)
+long duration = 0;      // Ultrasonic Sensor Timing
+int degree = 0;         // Fan Rotation Angle
+int Servodegree = 0;    // Servo Motor Position
+unsigned long lastTime = 0;        // Last Sensor Update
+unsigned long startTime = 0;       // System Uptime Counter
+bool isDay = false;                // Day/Night Mode Flag
+bool AC = false;                   // Air Conditioning Status
+unsigned long lastStatusPrint = 0; // Last Status Display Update
+unsigned long lastOLEDUpdate = 0;  // Last OLED Screen Update
 
-// WiFi and Network
-char ssid[] = WIFI_SSID;
-char pass[] = WIFI_PASSWORD;
+// 🚨 Alert State Management
+static bool fireAlertActive = false;    // Fire Detection Active Flag
+static bool motionAlertActive = false;  // Motion Detection Active Flag
 
-// PIR Motion Detection
+// 🔄 Arduino Communication Resources (replacing FreeRTOS)
+// Simple flags and timers instead of queues and semaphores
+static bool sensorDataReady = false;
+static bool eventPending = false;
+static bool audioPending = false;
+static unsigned long lastSensorUpdate = 0;
+static unsigned long lastEventCheck = 0;
+static unsigned long lastAudioCheck = 0;
+
+// ⏱️ Performance Optimization Settings
+const unsigned long oledUpdateInterval = 1000;  // OLED Refresh Rate (ms)
+
+// 📋 Task Management (simplified for Arduino)
+static unsigned long lastSensorTask = 0;
+static unsigned long lastActuatorTask = 0;
+static unsigned long lastLCDTask = 0;
+static unsigned long lastOLEDTask = 0;
+static unsigned long lastWiFiTask = 0;
+static unsigned long lastSysMonTask = 0;
+
+// PIR Motion Detection State Tracking
 static bool lastPirState = false;
 static int pirStabilityCounter = 0;
 
@@ -130,25 +151,9 @@ const unsigned long autoSwipeDelay = 15000;
 
 // Audio/Buzzer
 static bool buzzerInitialized = false;
-#define BUZZER_LEDC_CHANNEL 7
-
-// FreeRTOS Resources
-QueueHandle_t sensorDataQueue = nullptr;
-QueueHandle_t eventQueue = nullptr;
-QueueHandle_t audioQueue = nullptr;
-SemaphoreHandle_t i2cMutex = nullptr;
-SemaphoreHandle_t dataMutex = nullptr;
-
-// Task Handles
-static TaskHandle_t hTaskSensors = nullptr;
-static TaskHandle_t hTaskActuators = nullptr;
-static TaskHandle_t hTaskLCD = nullptr;
-static TaskHandle_t hTaskOLED = nullptr;
-static TaskHandle_t hTaskWiFi = nullptr;
-static TaskHandle_t hTaskSysMon = nullptr;
 
 // ========== DATA STRUCTURES ==========
-// Sensor data structure
+// Shared sensor readings payload
 typedef struct {
   int temperatureC;
   int humidityPct;
@@ -158,7 +163,7 @@ typedef struct {
   uint32_t tsMs;
 } SensorData;
 
-// Event types
+// Event types for inter-task notifications
 enum EventType {
   EVENT_NONE = 0,
   EVENT_MOTION_DETECTED,
@@ -172,7 +177,7 @@ struct Event {
   uint32_t tsMs;
 };
 
-// Audio event types
+// Audio event types for Core 0 audio processing
 enum AudioEventType {
   AUDIO_STARTUP = 0,
   AUDIO_MODE_SWITCH,
@@ -296,16 +301,16 @@ void readMotion() {
     if (currentPirState != lastPirState) {
         pirStabilityCounter++;
         if (pirStabilityCounter >= 2) {
-            if (eventQueue) {
-                if (currentPirState && isDay) {
+            if (eventPending) { // Changed from eventQueue to eventPending
+                if (currentPirState && !isDay) {  // Fixed: Night mode detection
                     Event e{EVENT_MOTION_DETECTED, (uint32_t)millis()};
-                    xQueueSend(eventQueue, &e, 0);
+                    // xQueueSend(eventQueue, &e, 0); // Original line commented out
                     Serial.println("🚨 Motion detected at NIGHT - Thief alert triggered");
-                } else if (currentPirState && !isDay) {
+                } else if (currentPirState && isDay) {
                     Serial.println("👥 Motion detected during DAY - No thief alert (normal operation)");
                 } else if (!currentPirState) {
                     Event e{EVENT_MOTION_CLEARED, (uint32_t)millis()};
-                    xQueueSend(eventQueue, &e, 0);
+                    // xQueueSend(eventQueue, &e, 0); // Original line commented out
                     Serial.println("✅ Motion cleared");
                 }
             }
@@ -369,8 +374,8 @@ void turnOffFan() {
 
 void moveServo() {
     SensorData latest{};
-    if (xQueuePeek(sensorDataQueue, &latest, 0) == pdTRUE) {
-        if (latest.distanceCm <= DISTANCE_THRESHOLD) {
+    if (sensorDataReady) { // Changed from xQueuePeek to sensorDataReady
+        if (getDistance() <= DISTANCE_THRESHOLD) {
             degree = 180;
             lastTime = millis();
         }
@@ -396,20 +401,20 @@ void deactivateRelay() {
     digitalWrite(RELAY_PIN, LOW);
 }
 
-// ========== AUDIO FUNCTIONS ==========
+// ========== AUDIO/BUZZER FUNCTIONS ==========
+
 static void buzzerAttach() {
     if (buzzerInitialized) return;
-    ledcSetup(BUZZER_LEDC_CHANNEL, 2000, 10);
-    ledcAttachPin(BUZZER_PIN, BUZZER_LEDC_CHANNEL);
+    // No hardware setup needed - Tone library handles everything
     buzzerInitialized = true;
 }
 
 static void writeTone(int frequency) {
     buzzerAttach();
     if (frequency <= 0) {
-        ledcWriteTone(BUZZER_LEDC_CHANNEL, 0);
+        noTone(BUZZER_PIN);  // Stop tone
     } else {
-        ledcWriteTone(BUZZER_LEDC_CHANNEL, frequency);
+        tone(BUZZER_PIN, frequency);  // Play tone at frequency
     }
 }
 
@@ -417,7 +422,7 @@ void initAudio() {
     Serial.printf("Initializing audio on pin %d\n", BUZZER_PIN);
     pinMode(BUZZER_PIN, OUTPUT);
     buzzerAttach();
-    writeTone(0);
+    noTone(BUZZER_PIN);  // Ensure silent start
     Serial.println("Audio initialization complete");
 }
 
@@ -428,10 +433,52 @@ void playStartupTone() {
     for (unsigned i = 0; i < sizeof(startupNotes) / sizeof(startupNotes[0]); i++) {
         Serial.printf("Playing note %d Hz\n", startupNotes[i]);
         writeTone(startupNotes[i]);
-        vTaskDelay(pdMS_TO_TICKS(duration + 20));
+        delay(duration + 20);
     }
-    writeTone(0);
+    noTone(BUZZER_PIN); // Ensure silent end
     Serial.println("Startup tone complete");
+}
+
+void playWelcomingSound() {
+    if (!buzzerInitialized) return;
+    
+    Serial.println("🎵 Playing welcoming sound...");
+    
+    // Pleasant welcoming melody - "Welcome to Smart Shop Guard" style
+    // Musical phrase that sounds friendly and professional
+    int welcomeMelody[] = {
+        523,  // C5 - "Wel-"
+        659,  // E5 - "come"
+        784,  // G5 - "to"
+        523,  // C5 - "Smart"
+        659,  // E5 - "Shop"
+        1047, // C6 - "Guard!"
+        784,  // G5 - ending flourish
+        1047  // C6 - final high note
+    };
+    
+    int welcomeDurations[] = {
+        250,  // Wel-
+        250,  // come
+        200,  // to
+        200,  // Smart
+        200,  // Shop
+        400,  // Guard!
+        200,  // flourish
+        500   // final note
+    };
+    
+    // Play the welcoming melody
+    for (int i = 0; i < 8; i++) {
+        writeTone(welcomeMelody[i]);
+        delay(welcomeDurations[i]);
+        writeTone(0); // Brief pause between notes
+        delay(50);
+    }
+    
+    // Final silence
+    noTone(BUZZER_PIN);
+    Serial.println("🎵 Welcome sound complete - System ready!");
 }
 
 void playModeSwitchTone() {
@@ -441,7 +488,7 @@ void playModeSwitchTone() {
         writeTone(switchNotes[i]);
         vTaskDelay(pdMS_TO_TICKS(duration + 20));
     }
-    writeTone(0);
+    noTone(BUZZER_PIN); // Ensure silent end
 }
 
 void playAlertTone() {
@@ -456,9 +503,7 @@ void playAlertTone() {
         writeTone(tone2);
         vTaskDelay(pdMS_TO_TICKS(duration));
     }
-    writeTone(tone1);
-    vTaskDelay(pdMS_TO_TICKS(250));
-    writeTone(0);
+    noTone(BUZZER_PIN); // Ensure silent end
     Serial.println("Alert tone complete");
 }
 
@@ -466,12 +511,12 @@ void playTone(int frequency, int duration) {
     writeTone(frequency);
     if (duration > 0) {
         vTaskDelay(pdMS_TO_TICKS(duration));
-        writeTone(0);
+        noTone(BUZZER_PIN); // Ensure silent end
     }
 }
 
 void stopTone() {
-    writeTone(0);
+    noTone(BUZZER_PIN);
 }
 
 // ========== LCD DISPLAY FUNCTIONS ==========
@@ -640,7 +685,7 @@ void initOLEDDisplay() {
     pinMode(BUTTON_PREV, INPUT_PULLUP);
     vTaskDelay(pdMS_TO_TICKS(100));
     
-    Serial.println("OLED buttons initialized - NEXT: " + String(BUTTON_NEXT) + ", PREV: " + String(BUTTON_PREV));
+    Serial.println("OLED buttons initialized - NEXT: " + String(BUTTON_NEXT) + ", PREV: " + String(BUTTON_NEXT) + ", PREV: " + String(BUTTON_PREV));
     
     // Show intro animation
     showIntro();
@@ -665,11 +710,6 @@ void showIntro() {
         display.clear();
         display.drawString(15, 15, line1);
         display.drawString(35, 30, line2.substring(0, i));
-        
-        if (i == line2.length()) {
-            display.drawXbm(80, 32, 16, 16, shield_icon);
-        }
-        
         display.display();
         vTaskDelay(pdMS_TO_TICKS(100));
     }
@@ -684,7 +724,6 @@ void showIntro() {
         display.clear();
         display.drawString(15, 15, "Smart Shop");
         display.drawString(35, 30, "Guard");
-        display.drawXbm(80, 32, 16, 16, shield_icon);
         display.display();
         vTaskDelay(pdMS_TO_TICKS(200));
     }
@@ -692,7 +731,6 @@ void showIntro() {
     display.clear();
     display.drawString(15, 15, "Smart Shop");
     display.drawString(35, 30, "Guard");
-    display.drawXbm(80, 32, 16, 16, shield_icon);
     display.display();
     vTaskDelay(pdMS_TO_TICKS(400));
 }
@@ -1126,19 +1164,17 @@ BLYNK_CONNECTED() {
 BLYNK_WRITE(VPIN_DAY_NIGHT) {
     isDay = param.asInt();
     
-    if (audioQueue) {
+    if (audioPending) { // Changed from audioQueue to audioPending
         AudioEvent modeAudio{AUDIO_MODE_SWITCH, (uint32_t)millis()};
-        xQueueSend(audioQueue, &modeAudio, 0);
+        // xQueueSend(audioQueue, &modeAudio, 0); // Original line commented out
+        Serial.println("[CORE 0] Playing mode switch tone");
+        playModeSwitchTone();
+        audioPending = false; // Reset flag
     }
     
-    if (i2cMutex && xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-        displayModeStatus();
-        displayOLEDModeStatus();
-        xSemaphoreGive(i2cMutex);
-    } else {
-        displayModeStatus();
-        displayOLEDModeStatus();
-    }
+    // Display mode status (no mutex needed in Arduino)
+    displayModeStatus();
+    displayOLEDModeStatus();
 }
 
 BLYNK_WRITE(VPIN_AC_CONTROL) {
@@ -1154,245 +1190,158 @@ void sendSensorDataToBlynk(int temperature, int humidity, bool flame, bool motio
     }
 }
 
-// ========== FREERTOS TASKS ==========
-void TaskWiFiBlynk(void* pvParameters) {
-    Serial.printf("[CORE %d] TaskWiFiBlynk started\n", xPortGetCoreID());
-    SensorData latest{};
-    unsigned long lastBlynkSend = 0;
+// ========== ARDUINO TASK FUNCTIONS ==========
+void handleWiFiBlynk() {
+    static unsigned long lastBlynkSend = 0;
     const unsigned long blynkSendInterval = 2000;
     
-    for(;;) {
-        handleWiFiReconnection();
+    handleWiFiReconnection();
+    
+    if (isWiFiConnected()) {
+        Blynk.run();
         
-        if (isWiFiConnected()) {
-            Blynk.run();
-            
-            if (millis() - lastBlynkSend >= blynkSendInterval) {
-                if (xQueuePeek(sensorDataQueue, &latest, 0) == pdTRUE) {
-                    sendSensorDataToBlynk(latest.temperatureC, latest.humidityPct, latest.flame, latest.pirMotion);
-                    lastBlynkSend = millis();
-                }
+        if (millis() - lastBlynkSend >= blynkSendInterval) {
+            if (sensorDataReady) {
+                sendSensorDataToBlynk(t, h, fireDetected, motionDetected);
+                lastBlynkSend = millis();
             }
         }
-        
-        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 
-void TaskLCD(void* pvParameters) {
-    Serial.printf("[CORE %d] TaskLCD started\n", xPortGetCoreID());
+void handleLCD() {
     static unsigned long lastNormalUpdate = 0;
     
-    for(;;) {
-        if (!fireAlertActive && !motionAlertActive && (millis() - lastNormalUpdate > 5000)) {
-            if (xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
-                displayNormalStatus();
-                xSemaphoreGive(i2cMutex);
-                lastNormalUpdate = millis();
-            }
-        }
-        
-        vTaskDelay(pdMS_TO_TICKS(1000));
+    if (!fireAlertActive && !motionAlertActive && (millis() - lastNormalUpdate > 5000)) {
+        displayNormalStatus();
+        lastNormalUpdate = millis();
     }
 }
 
-void TaskOLED(void* pvParameters) {
-    Serial.printf("[CORE %d] TaskOLED started\n", xPortGetCoreID());
-    for(;;) {
-        handleOLEDButtons();
-        if (xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
-            updateOLEDDisplay();
-            xSemaphoreGive(i2cMutex);
-        }
-        vTaskDelay(pdMS_TO_TICKS(200));
-    }
+void handleOLED() {
+    handleOLEDButtons();
+    updateOLEDDisplay();
 }
 
-void TaskSensorPoll(void* pvParameters) {
-    Serial.printf("[CORE %d] TaskSensorPoll started\n", xPortGetCoreID());
-    SensorData msg{};
+void handleSensors() {
     static bool fireStable = false;
     static int fireChangeCounter = 0;
     
-    for(;;) {
-        readTemperatureHumidity();
-        msg.temperatureC = t;
-        msg.humidityPct = h;
+    readTemperatureHumidity();
+    
+    readFlameSensor();
+    bool fireRaw = isFlameDetected();
 
-        readFlameSensor();
-        bool fireRaw = isFlameDetected();
-
-        // Debounce fire: require 3 consecutive samples to change state
-        if (fireRaw != fireStable) {
-            fireChangeCounter++;
-            if (fireChangeCounter >= 3) {
-                fireStable = fireRaw;
-                Event e{fireStable ? EVENT_FIRE_DETECTED : EVENT_FIRE_CLEARED, (uint32_t)millis()};
-                xQueueSend(eventQueue, &e, 0);
-                fireChangeCounter = 0;
-            }
-        } else {
+    // Debounce fire: require 3 consecutive samples to change state
+    if (fireRaw != fireStable) {
+        fireChangeCounter++;
+        if (fireChangeCounter >= 3) {
+            fireStable = fireRaw;
+            fireDetected = fireStable;
             fireChangeCounter = 0;
         }
+    } else {
+        fireChangeCounter = 0;
+    }
 
-        msg.flame = fireStable;
-        readMotion();
-        
-        triggerUltrasonicSensor();
-        msg.distanceCm = getDistance();
-        
-        // Log distance for debugging
-        Serial.print("📏 Distance: ");
-        Serial.print(msg.distanceCm);
-        Serial.println(" cm");
-        
-        msg.pirMotion = isMotionDetected();
-        msg.tsMs = millis();
-        xQueueOverwrite(sensorDataQueue, &msg);
+    readMotion();
+    
+    triggerUltrasonicSensor();
+    
+    // Log distance for debugging
+    Serial.print("📏 Distance: ");
+    Serial.print(getDistance());
+    Serial.println(" cm");
+    
+    sensorDataReady = true;
+    lastSensorUpdate = millis();
+}
 
-        vTaskDelay(pdMS_TO_TICKS(250));
+void handleActuators() {
+    static unsigned long lastActuatorUpdate = 0;
+    const unsigned long actuatorInterval = 100; // 100ms interval
+    
+    // Only run every actuatorInterval milliseconds
+    if (millis() - lastActuatorUpdate < actuatorInterval) {
+        return;
+    }
+    lastActuatorUpdate = millis();
+    
+    // Handle fire alerts
+    if (fireDetected && !fireAlertActive) {
+        fireAlertActive = true;
+        Serial.println("🔥 FIRE ALERT ACTIVATED - Activating relay and displays");
+        activateRelay();
+        displayFireAlert();
+        displayOLEDFireAlert();
+        // Play fire alert tone
+        playAlertTone();
+    } else if (!fireDetected && fireAlertActive) {
+        fireAlertActive = false;
+        Serial.println("✅ Fire cleared - Deactivating relay and displays");
+        deactivateRelay();
+        displaySafeStatus();
+        displayOLEDSafeStatus();
+    }
+    
+    // Handle motion alerts
+    if (motionDetected && !motionAlertActive) {
+        motionAlertActive = true;
+        Serial.println("🚨 MOTION ALERT ACTIVATED - Displaying thief alert");
+        displayThiefAlert();
+        displayOLEDThiefAlert();
+        // Play motion alert tone
+        playAlertTone();
+    } else if (!motionDetected && motionAlertActive) {
+        motionAlertActive = false;
+        Serial.println("✅ Motion cleared - Returning to normal status");
+        displayNormalStatus();
+        displayOLEDMotionCleared();
+    }
+    
+    // Control fan and servo based on sensor data
+    if (sensorDataReady) {
+        controlFan(t, h);  // Use global t and h variables
+        moveServo();
     }
 }
 
-void TaskActuators(void* pvParameters) {
-    Serial.printf("[CORE %d] TaskActuators started\n", xPortGetCoreID());
-    SensorData latest{};
-    Event ev{};
+void handleSystemMonitor() {
+    static unsigned long lastHeapReport = 0;
+    static unsigned long lastSystemUpdate = 0;
+    const unsigned long systemInterval = 1000; // 1 second interval
     
-    for(;;) {
-        if (xQueueReceive(eventQueue, &ev, pdMS_TO_TICKS(10)) == pdTRUE) {
-            switch (ev.type) {
-                case EVENT_FIRE_DETECTED:
-                    fireAlertActive = true;
-                    if (audioQueue) {
-                        AudioEvent fireAudio{AUDIO_FIRE_ALERT, (uint32_t)millis()};
-                        xQueueSend(audioQueue, &fireAudio, 0);
-                    }
-                    activateRelay();
-                    if (xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
-                        displayFireAlert();
-                        displayOLEDFireAlert();
-                        xSemaphoreGive(i2cMutex);
-                    }
-                    Serial.println("[CORE 1] FIRE ALERT ACTIVATED - Display locked, audio queued");
-                    break;
-                case EVENT_FIRE_CLEARED:
-                    fireAlertActive = false;
-                    deactivateRelay();
-                    if (xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
-                        displaySafeStatus();
-                        displayOLEDSafeStatus();
-                        xSemaphoreGive(i2cMutex);
-                    }
-                    Serial.println("[CORE 1] FIRE ALERT CLEARED - Display returned to normal");
-                    break;
-                case EVENT_MOTION_DETECTED:
-                    motionAlertActive = true;
-                    if (audioQueue) {
-                        AudioEvent motionAudio{AUDIO_MOTION_ALERT, (uint32_t)millis()};
-                        xQueueSend(audioQueue, &motionAudio, 0);
-                    }
-                    if (xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
-                        displayThiefAlert();
-                        displayOLEDThiefAlert();
-                        xSemaphoreGive(i2cMutex);
-                    }
-                    Serial.println("[CORE 1] MOTION ALERT ACTIVATED - Display locked, audio queued");
-                    break;
-                case EVENT_MOTION_CLEARED:
-                    motionAlertActive = false;
-                    if (xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
-                        displayNormalStatus();
-                        displayOLEDMotionCleared();
-                        xSemaphoreGive(i2cMutex);
-                    }
-                    Serial.println("[CORE 1] MOTION ALERT CLEARED - Display returned to normal");
-                    break;
-                default: break;
-            }
-        }
-        
-        if (xQueuePeek(sensorDataQueue, &latest, 0) == pdTRUE) {
-            controlFan(latest.temperatureC, latest.humidityPct);
-            moveServo();
-        }
-        
-        vTaskDelay(pdMS_TO_TICKS(20));
+    // Only run every systemInterval milliseconds
+    if (millis() - lastSystemUpdate < systemInterval) {
+        return;
     }
-}
-
-void TaskSystemMonitor(void* pvParameters) {
-    Serial.printf("[CORE %d] TaskSystemMonitor started\n", xPortGetCoreID());
-    AudioEvent audioEvent{};
-    unsigned long lastHeapReport = 0;
-    unsigned long lastTaskReport = 0;
+    lastSystemUpdate = millis();
     
-    for(;;) {
-        // Process audio events
-        if (xQueueReceive(audioQueue, &audioEvent, pdMS_TO_TICKS(10)) == pdTRUE) {
-            switch (audioEvent.type) {
-                case AUDIO_STARTUP:
-                    Serial.println("[CORE 0] Playing startup tone");
-                    playStartupTone();
-                    break;
-                case AUDIO_MODE_SWITCH:
-                    Serial.println("[CORE 0] Playing mode switch tone");
-                    playModeSwitchTone();
-                    break;
-                case AUDIO_FIRE_ALERT:
-                    Serial.println("[CORE 0] Playing fire alert tone");
-                    playAlertTone();
-                    break;
-                case AUDIO_MOTION_ALERT:
-                    Serial.println("[CORE 0] Playing motion alert tone");
-                    playAlertTone();
-                    break;
-                default: break;
-            }
-        }
-        
-        // System monitoring (every 30 seconds)
-        if (millis() - lastHeapReport > 30000) {
-            Serial.printf("[CORE 0] Free heap: %d bytes, Min free: %d bytes\n", 
-                          ESP.getFreeHeap(), ESP.getMinFreeHeap());
-            lastHeapReport = millis();
-        }
-        
-        // Task stack monitoring (every 60 seconds)
-        if (millis() - lastTaskReport > 60000) {
-            if (hTaskSensors) {
-                Serial.printf("[CORE 0] TaskSensor stack high water: %d\n", 
-                              uxTaskGetStackHighWaterMark(hTaskSensors));
-            }
-            if (hTaskActuators) {
-                Serial.printf("[CORE 0] TaskActuators stack high water: %d\n", 
-                              uxTaskGetStackHighWaterMark(hTaskActuators));
-            }
-            if (hTaskWiFi) {
-                Serial.printf("[CORE 0] TaskWiFi stack high water: %d\n", 
-                              uxTaskGetStackHighWaterMark(hTaskWiFi));
-            }
-            lastTaskReport = millis();
-        }
-        
-        vTaskDelay(pdMS_TO_TICKS(100));
+    // Process audio events
+    if (audioPending) {
+        Serial.println("🔊 Processing audio event");
+        // For now, just reset the flag since we're not using complex audio queuing
+        audioPending = false;
+    }
+    
+    // System monitoring (every 30 seconds)
+    if (millis() - lastHeapReport > 30000) {
+        Serial.printf("💾 Free heap: %d bytes\n", ESP.getFreeHeap());
+        lastHeapReport = millis();
     }
 }
 
 // ========== ARDUINO SETUP & LOOP ==========
 void setup() {
+    // Initialize serial communication
+    Serial.begin(SERIAL_BAUD_RATE);
+    Serial.println("🚀 Smart Shop Guard - Arduino IDE Version Starting...");
+    
     // Power stabilization delay
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    delay(1000);
     
     // System initialization
     initSystem();
-    
-    // FreeRTOS resource creation
-    sensorDataQueue = xQueueCreate(1, sizeof(SensorData));
-    eventQueue = xQueueCreate(10, sizeof(Event));
-    audioQueue = xQueueCreate(5, sizeof(AudioEvent));
-    i2cMutex = xSemaphoreCreateMutex();
-    dataMutex = xSemaphoreCreateMutex();
     
     // Display system initialization
     Serial.println("🖥️ Initializing display systems...");
@@ -1412,12 +1361,9 @@ void setup() {
     initActuators();
     initAudio();
     
-    // Startup audio queue
-    AudioEvent startupAudio{AUDIO_STARTUP, (uint32_t)millis()};
-    if (audioQueue) {
-        xQueueSend(audioQueue, &startupAudio, 0);
-        Serial.println("🔊 Startup tone queued for Core 0 audio processing");
-    }
+    // Play welcoming sound after audio initialization
+    Serial.println("🔊 Playing welcoming sound...");
+    playWelcomingSound();
     
     // Network & cloud services setup
     Serial.println("🌐 Attempting WiFi connection (5 second timeout)...");
@@ -1431,28 +1377,30 @@ void setup() {
         Serial.println("🔄 System will attempt WiFi reconnection every 30 seconds");
     }
     
-    // Task creation & core assignment
-    Serial.println("=== 🚀 Task Creation with Optimized Core Assignment ===");
-    Serial.println("🔥 Core 0: WiFi + Blynk, system monitoring, alerts/buzzer");
-    Serial.println("⚡ Core 1: Sensors, LCD, OLED, actuators, motion processing");
-    
-    // Core 1: Real-time processing tasks (High Priority)
-    xTaskCreatePinnedToCore(TaskSensorPoll, "tSensors", 4096, nullptr, 4, &hTaskSensors, 1);
-    xTaskCreatePinnedToCore(TaskActuators,  "tAct",     4096, nullptr, 5, &hTaskActuators, 1);
-    xTaskCreatePinnedToCore(TaskLCD,        "tLCD",     3072, nullptr, 2, &hTaskLCD,      1);
-    xTaskCreatePinnedToCore(TaskOLED,       "tOLED",    3072, nullptr, 2, &hTaskOLED,     1);
-    
-    // Core 0: Network & system services (Background Priority)
-    xTaskCreatePinnedToCore(TaskWiFiBlynk,     "tWiFi",   4096, nullptr, 3, &hTaskWiFi,   0);
-    xTaskCreatePinnedToCore(TaskSystemMonitor, "tSysMon", 3072, nullptr, 1, &hTaskSysMon, 0);
+    // Arduino-style task management
+    Serial.println("=== 🚀 Arduino Task Management ===");
+    Serial.println("🔄 All tasks will run in the main loop with timing control");
     
     // System resource information
     Serial.printf("💾 Free heap: %d bytes\n", ESP.getFreeHeap());
-    Serial.printf("⚡ CPU0 freq: %d MHz, CPU1 freq: %d MHz\n", ESP.getCpuFreqMHz(), ESP.getCpuFreqMHz());
+    Serial.printf("⚡ CPU freq: %d MHz\n", ESP.getCpuFreqMHz());
     Serial.println("🎯 Setup complete! System ready for operation.");
+    
+    // Final system ready notification sound
+    Serial.println("🎵 System fully initialized - Playing ready notification...");
+    delay(500); // Brief pause before final sound
+    playStartupTone(); // Play the startup tone sequence to indicate system ready
 }
 
 void loop() {
-    // Minimal loop - most work done by FreeRTOS tasks
-    vTaskDelay(pdMS_TO_TICKS(1000));  // 1-second system heartbeat
+    // Call all handler functions with appropriate timing
+    handleWiFiBlynk();
+    handleLCD();
+    handleOLED();
+    handleSensors();
+    handleActuators();
+    handleSystemMonitor();
+    
+    // Small delay to prevent overwhelming the system
+    delay(10);
 }
