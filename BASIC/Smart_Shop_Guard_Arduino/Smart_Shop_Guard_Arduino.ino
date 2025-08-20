@@ -118,7 +118,7 @@ int degree = 0;         // Fan Rotation Angle
 int Servodegree = 0;    // Servo Motor Position
 unsigned long lastTime = 0;        // Last Sensor Update
 unsigned long startTime = 0;       // System Uptime Counter
-bool isDay = false;                // Day/Night Mode Flag
+bool isNight = true ;                // Day/Night Mode Flag
 bool AC = false;                   // Air Conditioning Status
 unsigned long lastStatusPrint = 0; // Last Status Display Update
 unsigned long lastOLEDUpdate = 0;  // Last OLED Screen Update
@@ -338,18 +338,15 @@ void readMotion() {
     if (currentPirState != lastPirState) {
         pirStabilityCounter++;
         if (pirStabilityCounter >= 2) {
-            if (eventPending) { // Changed from eventQueue to eventPending
-                if (currentPirState && !isDay) {  // Fixed: Night mode detection
-                    Event e{EVENT_MOTION_DETECTED, (uint32_t)millis()};
-                    // xQueueSend(eventQueue, &e, 0); // Original line commented out
-                    Serial.println("🚨 Motion detected at NIGHT - Thief alert triggered");
-                } else if (currentPirState && isDay) {
-                    Serial.println("👥 Motion detected during DAY - No thief alert (normal operation)");
-                } else if (!currentPirState) {
-                    Event e{EVENT_MOTION_CLEARED, (uint32_t)millis()};
-                    // xQueueSend(eventQueue, &e, 0); // Original line commented out
-                    Serial.println("✅ Motion cleared");
-                }
+            if (currentPirState && isNight) {  // Motion detected during NIGHT - trigger thief alert
+                motionDetected = true;
+                Serial.println("🚨 Motion detected at NIGHT - Thief alert triggered");
+            } else if (currentPirState && !isNight) {
+                Serial.println("👥 Motion detected during DAY - No thief alert (normal operation)");
+                motionDetected = false; // No alert during day
+            } else if (!currentPirState) {
+                motionDetected = false;
+                Serial.println("✅ Motion cleared");
             }
             lastPirState = currentPirState;
             pirStabilityCounter = 0;
@@ -394,7 +391,7 @@ void initActuators() {
 }
 
 void controlFan(int temperature, int humidity) {
-    if (temperature > TEMP_THRESHOLD || humidity > HUMIDITY_THRESHOLD || AC) {
+    if (AC) {
         turnOnFan();
     } else {
         turnOffFan();
@@ -412,7 +409,7 @@ void turnOffFan() {
 void moveServo() {
     SensorData latest{};
     if (sensorDataReady) { // Changed from xQueuePeek to sensorDataReady
-        if (getDistance() <= DISTANCE_THRESHOLD) {
+        if ((getDistance() <= DISTANCE_THRESHOLD && !isNight) || (getDistance() == 999 && !isNight)){
             degree = 180;
             lastTime = millis();
         }
@@ -528,6 +525,39 @@ void playModeSwitchTone() {
     noTone(BUZZER_PIN); // Ensure silent end
 }
 
+void playEnhancedModeSwitchTone() {
+    Serial.println("🎵 Playing enhanced mode switch sound...");
+    
+    if (isNight) {
+        // Night mode activation: Descending tones (getting serious)
+        int nightNotes[] = {1047, 880, 659, 523, 440}; // C6 -> A4
+        int nightDurations[] = {150, 150, 150, 150, 300};
+        
+        for (int i = 0; i < 5; i++) {
+            writeTone(nightNotes[i]);
+            delay(nightDurations[i]);
+            writeTone(0); // Brief pause
+            delay(50);
+        }
+        Serial.println("🌙 Night mode sound complete - Security enhanced!");
+    } else {
+        // Day mode activation: Ascending tones (getting brighter)
+        int dayNotes[] = {440, 523, 659, 784, 1047}; // A4 -> C6
+        int dayDurations[] = {150, 150, 150, 150, 300};
+        
+        for (int i = 0; i < 5; i++) {
+            writeTone(dayNotes[i]);
+            delay(dayDurations[i]);
+            writeTone(0); // Brief pause
+            delay(50);
+        }
+        Serial.println("☀️ Day mode sound complete - Normal operations!");
+    }
+    
+    noTone(BUZZER_PIN); // Ensure silent end
+    Serial.println("🎵 Enhanced mode switch sound complete!");
+}
+
 void playAlertTone() {
     Serial.println("Playing alert tone...");
     int duration = 150;
@@ -542,6 +572,16 @@ void playAlertTone() {
     }
     noTone(BUZZER_PIN); // Ensure silent end
     Serial.println("Alert tone complete");
+}
+
+void playContinuousAlertTone() {
+    static unsigned long lastAlertTone = 0;
+    const unsigned long alertToneInterval = 3000; // Play every 3 seconds during alert
+    
+    if (millis() - lastAlertTone >= alertToneInterval) {
+        playAlertTone();
+        lastAlertTone = millis();
+    }
 }
 
 void playTone(int frequency, int duration) {
@@ -630,9 +670,15 @@ void ledSecureMode() {
             breathDirection = 1;
         }
         
-        // Apply breathing effect to all pixels
+        // Apply breathing effect to all pixels - different colors for day/night
         for(int i = 0; i < NUM_PIXELS; i++) {
-            strip.setPixelColor(i, 0, breathLevel/4, breathLevel);
+            if (isNight) {
+                // Night mode: Deep blue breathing
+                strip.setPixelColor(i, 0, breathLevel/6, breathLevel);
+            } else {
+                // Day mode: Gentle green breathing
+                strip.setPixelColor(i, 0, breathLevel, breathLevel/3);
+            }
         }
         strip.show();
         lastBreath = millis();
@@ -865,7 +911,7 @@ void displayModeStatus() {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Mode: ");
-    lcd.print(isDay ? "Day" : "Night");  // Fixed mode display logic
+    lcd.print(isNight ? "Night" : "Day");  // Fixed mode display logic
     delay(MODE_DISPLAY_DELAY);
     yield();
     lcd.clear();
@@ -1024,11 +1070,8 @@ void showIntro() {
         delay(200);
     }
     
-    display.clear();
-    display.drawString(15, 15, "Smart Shop");
-    display.drawString(35, 30, "Guard");
-    display.display();
-    delay(400);
+    // Show connection status after intro
+    showConnectionStatus();
 }
 
 void clearOLEDDisplay() {
@@ -1043,8 +1086,12 @@ void displayOLEDModeStatus() {
     display.clear();
     display.setFont(ArialMT_Plain_16);
     display.drawString(15, 15, "Mode: ");
-    display.drawString(15, 35, isDay ? "Day" : "Night");  // Fixed mode display logic
+    display.drawString(15, 35, isNight ? "Night" : "Day");
     display.display();
+    delay(1000);
+    
+    // Show connection status after mode change
+    showConnectionStatus();
     delay(1000);
     updateOLEDDisplay();
 }
@@ -1198,9 +1245,40 @@ void showSystemPage() {
     } else {
         display.drawString(0, 20, "WiFi: Disconnected");
     }
-    display.drawString(0, 30, "Mode: " + String(isDay ? "Day" : "Night"));
+    display.drawString(0, 30, "Mode: " + String(isNight ? "Night" : "Day"));
     display.drawString(0, 40, "Uptime: " + String(millis() / 1000) + "s");
     display.drawString(0, 50, "Memory: " + String(ESP.getFreeHeap()/1000) + "KB");
+}
+
+void showConnectionStatus() {
+    display.clear();
+    display.setFont(ArialMT_Plain_10);
+    display.drawString(0, 0, "Connection Status:");
+    
+    // WiFi Status
+    if (isWiFiConnected()) {
+        display.drawXbm(0, 15, 8, 8, wifi_icon_connected);
+        display.drawString(12, 15, "WiFi: Connected");
+        display.drawString(12, 25, "IP: " + WiFi.localIP().toString());
+    } else {
+        display.drawXbm(0, 15, 8, 8, wifi_icon_disconnected);
+        display.drawString(12, 15, "WiFi: Disconnected");
+        display.drawString(12, 25, "Attempting reconnect...");
+    }
+    
+    // Blynk Status
+    if (isBlynkConnected()) {
+        display.drawString(0, 35, "Blynk: Connected");
+    } else {
+        display.drawString(0, 35, "Blynk: Offline");
+    }
+    
+    // System Status
+    display.drawString(0, 45, "Mode: " + String(isNight ? "Night" : "Day"));
+    display.drawString(0, 55, "System: Ready");
+    
+    display.display();
+    delay(2000);
 }
 
 void showAlertsPage() {
@@ -1458,19 +1536,37 @@ BLYNK_CONNECTED() {
 }
 
 BLYNK_WRITE(VPIN_DAY_NIGHT) {
-    isDay = param.asInt();
+    bool previousMode = isNight;
+    isNight = param.asInt();
     
-    if (audioPending) { // Changed from audioQueue to audioPending
-        AudioEvent modeAudio{AUDIO_MODE_SWITCH, (uint32_t)millis()};
-        // xQueueSend(audioQueue, &modeAudio, 0); // Original line commented out
-        Serial.println("[CORE 0] Playing mode switch tone");
-        playModeSwitchTone();
-        audioPending = false; // Reset flag
+    // Only process if mode actually changed
+    if (previousMode != isNight) {
+        Serial.println("🌙 Mode switch: " + String(isNight ? "DAY -> NIGHT" : "NIGHT -> DAY"));
+        
+        // Play enhanced mode switch tone
+        Serial.println("[AUDIO] Playing enhanced mode switch tone");
+        playEnhancedModeSwitchTone();
+        
+        // Clear any active motion alerts when switching to day mode
+        if (!isNight && motionAlertActive) {
+            motionAlertActive = false;
+            motionDetected = false;
+            Serial.println("✅ Day mode activated - Clearing motion alerts");
+            displayNormalStatus();
+            displayOLEDMotionCleared();
+        }
+        
+        // Display mode status
+        displayModeStatus();
+        displayOLEDModeStatus();
+        
+        // Update LED effects for new mode
+        if (isNight) {
+            Serial.println("🌙 Night mode: Enhanced security monitoring active");
+        } else {
+            Serial.println("☀️ Day mode: Normal operations");
+        }
     }
-    
-    // Display mode status (no mutex needed in Arduino)
-    displayModeStatus();
-    displayOLEDModeStatus();
 }
 
 BLYNK_WRITE(VPIN_AC_CONTROL) {
@@ -1522,6 +1618,14 @@ void handleOLED() {
 void handleSensors() {
     static bool fireStable = false;
     static int fireChangeCounter = 0;
+    static unsigned long lastSensorRead = 0;
+    const unsigned long sensorReadInterval = 500; // Read sensors every 500ms
+    
+    // Only read sensors at specified intervals to prevent overwhelming
+    if (millis() - lastSensorRead < sensorReadInterval) {
+        return;
+    }
+    lastSensorRead = millis();
     
     readTemperatureHumidity();
     
@@ -1535,6 +1639,7 @@ void handleSensors() {
             fireStable = fireRaw;
             fireDetected = fireStable;
             fireChangeCounter = 0;
+            Serial.println("🔥 Fire detection state changed: " + String(fireDetected ? "DETECTED" : "CLEARED"));
         }
     } else {
         fireChangeCounter = 0;
@@ -1544,10 +1649,14 @@ void handleSensors() {
     
     triggerUltrasonicSensor();
     
-    // Log distance for debugging
-    Serial.print("📏 Distance: ");
-    Serial.print(getDistance());
-    Serial.println(" cm");
+    // Log distance for debugging (less frequently)
+    static unsigned long lastDistanceLog = 0;
+    if (millis() - lastDistanceLog > 2000) {
+        Serial.print("📏 Distance: ");
+        Serial.print(getDistance());
+        Serial.println(" cm");
+        lastDistanceLog = millis();
+    }
     
     sensorDataReady = true;
     lastSensorUpdate = millis();
@@ -1570,7 +1679,7 @@ void handleActuators() {
         activateRelay();
         displayFireAlert();
         displayOLEDFireAlert();
-        // Play fire alert tone
+        // Play initial fire alert tone
         playAlertTone();
     } else if (!fireDetected && fireAlertActive) {
         fireAlertActive = false;
@@ -1580,19 +1689,29 @@ void handleActuators() {
         displayOLEDSafeStatus();
     }
     
-    // Handle motion alerts
-    if (motionDetected && !motionAlertActive) {
+    // Continue playing alert tones while fire is detected
+    if (fireDetected && fireAlertActive) {
+        playContinuousAlertTone();
+    }
+    
+    // Handle motion alerts (only during night mode)
+    if (motionDetected && isNight && !motionAlertActive) {
         motionAlertActive = true;
         Serial.println("🚨 MOTION ALERT ACTIVATED - Displaying thief alert");
         displayThiefAlert();
         displayOLEDThiefAlert();
-        // Play motion alert tone
+        // Play initial motion alert tone
         playAlertTone();
-    } else if (!motionDetected && motionAlertActive) {
+    } else if ((!motionDetected || !isNight) && motionAlertActive) {
         motionAlertActive = false;
-        Serial.println("✅ Motion cleared - Returning to normal status");
+        Serial.println("✅ Motion cleared or day mode - Returning to normal status");
         displayNormalStatus();
         displayOLEDMotionCleared();
+    }
+    
+    // Continue playing alert tones while motion is detected during night
+    if (motionDetected && isNight && motionAlertActive) {
+        playContinuousAlertTone();
     }
     
     // Control fan and servo based on sensor data
@@ -1674,8 +1793,11 @@ void setup() {
     if (initWiFi()) {
         Serial.println("✅ WiFi connected, initializing Blynk cloud service...");
         initBlynk();
-        connectBlynk();
-        Serial.println("☁️ Cloud services initialized successfully!");
+        if (connectBlynk()) {
+            Serial.println("☁️ Cloud services initialized successfully!");
+        } else {
+            Serial.println("⚠️ Blynk connection failed - WiFi available but cloud offline");
+        }
     } else {
         Serial.println("⚠️ Starting in offline mode...");
         Serial.println("🔄 System will attempt WiFi reconnection every 30 seconds");
@@ -1707,6 +1829,9 @@ void loop() {
     
     // Update LED effects based on current system state
     updateLEDEffects();
+    
+    // Yield to allow ESP32 to handle background tasks
+    yield();
     
     // Small delay to prevent overwhelming the system
     delay(10);
