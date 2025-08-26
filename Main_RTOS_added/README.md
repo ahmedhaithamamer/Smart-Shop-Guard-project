@@ -286,14 +286,4 @@ This project is open-source and available under the MIT License.
 
 Contributions are welcome! Please feel free to submit pull requests, report bugs, or suggest enhancements.
 
-## 📞 Support
-
-For technical support or questions:
-- Check the troubleshooting section above
-- Review serial monitor output for diagnostic information
-- Ensure all hardware connections match the pin configuration
-- Verify power supply meets ESP32-S3 requirements
-
----
-
 **Smart Shop Guard** - Protecting your business with intelligent IoT technology! 🛡️🏪
