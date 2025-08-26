@@ -282,8 +282,4 @@ The system integrates with Blynk IoT platform:
 
 This project is open-source and available under the MIT License.
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit pull requests, report bugs, or suggest enhancements.
-
 **Smart Shop Guard** - Protecting your business with intelligent IoT technology! 🛡️🏪
