@@ -232,17 +232,24 @@ graph TB
 
 ## 🎥 Demonstration Videos
 
+### 🆕 Latest System Demonstration
+[Watch Complete System Demo](https://drive.google.com/file/d/1DEiiu3c_jyL2BlM3E3HrjiZbTmpKdn8Q/view?usp=sharing)
+
+*Latest comprehensive demonstration showing the complete Smart Shop Guard system in action with all integrated features.*
+
+---
+
 ### 🚪 Automatic Entry Detection System
-  [Watch Video](https://github.com/user-attachments/assets/28712764-492d-467e-9aa7-fb2b8b069abf)
+[Watch Video](https://github.com/user-attachments/assets/28712764-492d-467e-9aa7-fb2b8b069abf)
 
 ### 🔥 Firefighting System Response
-  [Watch Video](https://github.com/user-attachments/assets/1052b2f2-3211-4acc-8836-fc73112fbd1a)
+[Watch Video](https://github.com/user-attachments/assets/1052b2f2-3211-4acc-8836-fc73112fbd1a)
 
 ### 📺 LCD Alert Display
-  [Watch Video](https://github.com/user-attachments/assets/c1f41d64-3401-45b4-99e5-8f7c6153e420)
+[Watch Video](https://github.com/user-attachments/assets/c1f41d64-3401-45b4-99e5-8f7c6153e420)
 
 ### 🌡️ Climate Control System
-  [Watch Video](https://github.com/user-attachments/assets/e4350ce7-36f6-45f2-aca9-62d095d811f2)
+[Watch Video](https://github.com/user-attachments/assets/e4350ce7-36f6-45f2-aca9-62d095d811f2)
 
 ## 🔧 Troubleshooting
 
