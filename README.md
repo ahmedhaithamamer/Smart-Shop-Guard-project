@@ -374,16 +374,6 @@ This project is open-source and available under the MIT License. See [LICENSE](L
 - **Arduino Community** - For libraries and support
 - **FreeRTOS** - For the real-time operating system
 
-## 📞 Support
-
-For technical support or questions:
-- 📖 Check the troubleshooting section above
-- 🔍 Review serial monitor output for diagnostics
-- ✅ Verify hardware connections match pin configuration
-- ⚡ Ensure power supply meets ESP32-S3 requirements
-
----
-
 **Smart Shop Guard** - Protecting retail environments with intelligent IoT technology! 🛡️🏪
 
 *Copyright © 2024 Smart Shop Guard Project Team*
