@@ -71,6 +71,63 @@ Smart-Shop-Guard-project/
 - **Piezo Buzzer** - Audio alerts and notifications
 - **12V Fan** - Climate control system
 
+## 🔌 PCB Design & Hardware Development
+
+### 📋 Professional PCB Implementation
+
+![PCB Design](https://github.com/user-attachments/assets/e95afc47-ff93-44d2-a582-255bddddbb64)
+
+
+The Smart Shop Guard system features a professionally designed PCB that integrates all components for optimal performance and reliability:
+
+#### 🎯 **Circuit Design Features**
+- **Comprehensive Integration** - All sensors, actuators, power management, and display modules on single PCB
+- **ESP32-S3 GPIO Mapping** - Optimized pin assignments for maximum functionality
+  - **I²C Interfaces** - Dedicated lines for OLED and LCD displays
+  - **ADC Channels** - Analog inputs for flame sensor readings
+  - **PWM Outputs** - Motor control with precise speed regulation
+  - **GPIO Interrupts** - Fast response for ultrasonic and PIR sensors
+
+#### 🛡️ **Professional PCB Layout**
+- **Single-Layer Design** - Cost-effective manufacturing with professional routing
+- **Ground Plane** - Comprehensive ground coverage for noise reduction and stable reference
+- **Power Integrity** - Decoupling capacitors strategically placed near ESP32-S3 power pins
+
+#### 🔒 **Protective Circuitry**
+- **Motor Protection** - Flyback diodes for motors and relays
+- **Isolation** - Opto-isolated relay drivers for safety
+- **Power Protection** - Reverse polarity and surge protection on input supply
+- **ESD Protection** - Input protection for sensitive GPIO pins
+
+#### 🔧 **Development & Testing Features**
+- **Test Points** - Strategic placement for debugging and validation
+  - 3.3V and GND reference points
+  - I²C bus monitoring points
+  - UART communication lines
+  - Key GPIO signal access
+- **LED Indicators** - Power, status, and communication indicators
+- **Modular Design** - Easy component replacement and upgrades
+
+### 🏗️ **Physical Prototype Development**
+
+#### 📦 **Maquette Evolution**
+The system development included creating physical shop models for realistic testing:
+
+1. **Initial Prototype** - Cardboard and acrylic construction with manual cutting
+   - Validated basic functionality and sensor placement
+   - Tested system integration and user interaction
+   - Identified optimization opportunities
+
+2. **Final Version** - AutoCAD designed, laser-cut white acrylic construction
+   - Professional appearance and improved durability
+   - Precise component mounting and cable management
+   - Enhanced testing accuracy and demonstration quality
+
+#### 🎯 **Testing Validation**
+- **Sensor Placement Optimization** - Real-world positioning for maximum effectiveness
+- **System Layout Verification** - Physical validation of component interactions
+- **User Experience Testing** - Realistic operation scenarios and feedback
+
 ## 🚀 Quick Start
 
 ### 📋 Prerequisites
@@ -238,7 +295,7 @@ graph TB
 *Latest comprehensive demonstration showing the complete Smart Shop Guard system in action with all integrated features.*
 
 ---
-## OLD
+
 ### 🚪 Automatic Entry Detection System
 [Watch Video](https://github.com/user-attachments/assets/28712764-492d-467e-9aa7-fb2b8b069abf)
 
