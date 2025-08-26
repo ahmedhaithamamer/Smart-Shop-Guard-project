@@ -238,7 +238,7 @@ graph TB
 *Latest comprehensive demonstration showing the complete Smart Shop Guard system in action with all integrated features.*
 
 ---
-
+## OLD
 ### 🚪 Automatic Entry Detection System
 [Watch Video](https://github.com/user-attachments/assets/28712764-492d-467e-9aa7-fb2b8b069abf)
 
