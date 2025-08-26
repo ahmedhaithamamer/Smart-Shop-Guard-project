@@ -1,0 +1,86 @@
+MIT License
+
+Copyright (c) 2024 Smart Shop Guard Project Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+
+HARDWARE DISCLAIMER:
+This project involves working with electronic components, sensors, actuators,
+and potentially hazardous systems (relay controls, motors, etc.). Users are
+responsible for:
+
+1. Proper electrical safety practices
+2. Appropriate fusing and circuit protection
+3. Compliance with local electrical codes
+4. Safe handling of AC/DC power systems
+5. Proper testing in controlled environments
+
+The authors and contributors are not responsible for any damage, injury, or
+loss resulting from the construction, installation, or operation of this
+system.
+
+SECURITY NOTICE:
+This is an educational/demonstration project. For production security
+applications, additional measures should be implemented:
+
+1. Encrypted communications
+2. Secure credential storage
+3. Regular security updates
+4. Professional security assessment
+5. Compliance with relevant safety standards
+
+USE AT YOUR OWN RISK.
+
+================================================================================
+
+THIRD-PARTY LIBRARIES:
+This project uses various open-source libraries, each with their own licenses:
+
+- ESP32 Arduino Core (LGPL 2.1)
+- Blynk Library (MIT)
+- DHT Sensor Library (MIT)
+- LiquidCrystal_I2C (Various)
+- ESP32Servo (LGPL 2.1)
+- Adafruit NeoPixel (LGPL 3.0)
+- SH1106Wire/OLED Driver (MIT)
+
+Please refer to each library's individual license for specific terms.
+
+================================================================================
+
+ATTRIBUTION:
+If you use this project or derive work from it, attribution is appreciated
+but not required. Consider:
+
+1. Linking back to the original repository
+2. Mentioning "Smart Shop Guard" in your project documentation
+3. Contributing improvements back to the community
+4. Sharing your implementation experiences
+
+================================================================================
+
+SUPPORT:
+This project is provided as-is with community support through:
+- GitHub Issues for bug reports
+- Documentation and setup guides
+- Community forums and discussions
+
+No commercial support or warranty is provided.
