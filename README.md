@@ -376,5 +376,5 @@ This project is open-source and available under the MIT License. See [LICENSE](L
 
 **Smart Shop Guard** - Protecting retail environments with intelligent IoT technology! 🛡️🏪
 
-*Copyright © 2024 Smart Shop Guard Project Team*
+*Copyright © 2025 Ahmed Haitham Amer*
 
