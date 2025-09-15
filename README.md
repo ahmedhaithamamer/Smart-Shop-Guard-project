@@ -76,6 +76,7 @@ Smart-Shop-Guard-project/
 ### 📋 Professional PCB & Schematic Implementation
 
 ![PCB Design](https://github.com/user-attachments/assets/e95afc47-ff93-44d2-a582-255bddddbb64)
+--
 
 <img width="1227" height="866" alt="Screenshot 2025-08-26 050428" src="https://github.com/user-attachments/assets/a7fb277e-9106-477c-8b41-81815e7fe377" />
 
@@ -84,7 +85,7 @@ Smart-Shop-Guard-project/
 The Smart Shop Guard system features a professionally designed PCB that integrates all components for optimal performance and reliability:
 
 #### 🎯 **Circuit Design Features**
-- **Comprehensive Integration** - All sensors, actuators, power management, and display modules on single PCB
+- **Comprehensive Integration** - All sensors, actuators, power management, and display modules on a single PCB
 - **ESP32-S3 GPIO Mapping** - Optimized pin assignments for maximum functionality
   - **I²C Interfaces** - Dedicated lines for OLED and LCD displays
   - **ADC Channels** - Analog inputs for flame sensor readings
