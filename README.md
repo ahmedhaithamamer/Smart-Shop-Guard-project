@@ -80,9 +80,10 @@ Smart-Shop-Guard-project/
 
 <img width="1227" height="866" alt="Screenshot 2025-08-26 050428" src="https://github.com/user-attachments/assets/a7fb277e-9106-477c-8b41-81815e7fe377" />
 
+--
 
 
-The Smart Shop Guard system features a professionally designed PCB that integrates all components for optimal performance and reliability:
+The Smart Shop Guard system features a professionally designed PCB and schematic that integrates all components for optimal performance and reliability:
 
 #### 🎯 **Circuit Design Features**
 - **Comprehensive Integration** - All sensors, actuators, power management, and display modules on a single PCB
