@@ -12,7 +12,7 @@ The Smart Shop Guard is an intelligent security system designed for retail envir
 
 Here is a visual summary of the project, detailing the system architecture, features, and implementation results.
 
-![Academic Poster for Smart Shop Guard]<img width="4608" height="3456" alt="Slide1" src="https://github.com/user-attachments/assets/fe3d005d-ef9e-4f7d-958c-b42fcb0ba2f6" />
+<img width="4608" height="3456" alt="Slide1" src="https://github.com/user-attachments/assets/fe3d005d-ef9e-4f7d-958c-b42fcb0ba2f6" />
 
 
 ### 🎯 Key Features
