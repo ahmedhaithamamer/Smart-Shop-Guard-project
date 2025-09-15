@@ -8,6 +8,13 @@ A comprehensive IoT-based security and automation system for retail environments
 
 The Smart Shop Guard is an intelligent security system designed for retail environments, combining multiple sensors, actuators, and cloud connectivity to provide comprehensive monitoring and automated responses. The system uses ESP32 microcontrollers with FreeRTOS for optimal performance and reliability.
 
+## 🎓 Academic Poster
+
+Here is a visual summary of the project, detailing the system architecture, features, and implementation results.
+
+![Academic Poster for Smart Shop Guard]<img width="4608" height="3456" alt="Slide1" src="https://github.com/user-attachments/assets/fe3d005d-ef9e-4f7d-958c-b42fcb0ba2f6" />
+
+
 ### 🎯 Key Features
 
 - **🔥 Fire Detection & Suppression** - Automatic flame detection with relay-controlled suppression system
