@@ -73,9 +73,12 @@ Smart-Shop-Guard-project/
 
 ## 🔌 PCB Design & Hardware Development
 
-### 📋 Professional PCB Implementation
+### 📋 Professional PCB & Schematic Implementation
 
 ![PCB Design](https://github.com/user-attachments/assets/e95afc47-ff93-44d2-a582-255bddddbb64)
+
+<img width="1227" height="866" alt="Screenshot 2025-08-26 050428" src="https://github.com/user-attachments/assets/a7fb277e-9106-477c-8b41-81815e7fe377" />
+
 
 
 The Smart Shop Guard system features a professionally designed PCB that integrates all components for optimal performance and reliability:
